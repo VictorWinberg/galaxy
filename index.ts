@@ -72,9 +72,17 @@ async function main() {
       .allEvents()
       .on(
         "data",
-        async ({ transactionHash: hash, blockNumber, event, ...rest }: any) => {
+        async ({ transactionHash: hash, blockNumber, event }: any) => {
           const tx = await web3.eth.getTransaction(hash);
           const txReceipt = await web3.eth.getTransactionReceipt(hash);
+          if (!tx || !txReceipt) {
+            return console.log(
+              `B:${blockNumber}`,
+              hash.slice(0, 8),
+              `${event}`
+            );
+          }
+
           const { value: weiValue } = tx;
           const { gasUsed, effectiveGasPrice } = txReceipt;
           const value = Number(web3.utils.fromWei(weiValue, "ether"));
