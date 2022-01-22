@@ -4,4 +4,4 @@ set -eu # exit script on errors
 echo "> npm install ganache..."
 npm install ganache@7.0.0 dotenv@14.2.0
 
-export MAIN="server"
+export MAIN="server.js"

@@ -5,10 +5,10 @@ const options = {
   seed: process.env.SEED || "random_seed",
   db_path: "blockchain",
   account_keys_path: ".secrets",
-  chainId: 1234
+  chainId: process.env.CHAIN_ID || 1337
 };
 const server = ganache.server(options);
-const PORT = 7555;
+const PORT = Number(process.env.PORT || 8545);
 server.listen(PORT, async (err) => {
   if (err) throw err;
 
@@ -18,19 +18,19 @@ server.listen(PORT, async (err) => {
     method: "eth_accounts",
     params: [],
   });
-  console.log(`Accounts\n============\n${accounts.join("\n")}\n`);
+  console.log(`\nAccounts\n============\n${accounts.join("\n")}\n`);
 
   const gasPrice = await provider.request({
     method: "eth_gasPrice",
     params: [],
   });
-  console.log(`GAS PRICE\n============\n${gasPrice}\n`);
+  console.log(`\nGAS PRICE\n============\n${gasPrice}\n`);
 
   const blockNumber = await provider.request({
     method: "eth_blockNumber",
     params: [],
   });
-  console.log(`BLOCK NUMBER\n============\n${blockNumber}\n`);
+  console.log(`\nBLOCK NUMBER\n============\n${blockNumber}\n`);
 
   console.log();
 });
