@@ -1,0 +1,7 @@
+#!/bin/bash
+set -eu # exit script on errors
+
+echo "> npm install ganache..."
+npm install ganache
+
+export MAIN="server"

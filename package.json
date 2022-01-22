@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.ts",
   "scripts": {
-    "start": "nodemon -e ts --exec ts-node index"
+    "start": "nodemon -e ts --exec ts-node index",
+    "server": "nodemon server"
   },
   "author": "",
   "license": "ISC",
