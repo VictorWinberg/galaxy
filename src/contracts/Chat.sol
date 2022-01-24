@@ -28,22 +28,8 @@ contract BlockChat {
         messages[_roomName].push(message);
         emit NewMessage(_msg, msg.sender, block.timestamp, _roomName);
     }
-        // Send a message to a room and fire an event to be caught by the UI
-    function qweqwe(string calldata _msg, string calldata  _roomName) public {
-        Message memory message = Message(_msg, msg.sender, block.timestamp);
-        messages[_roomName].push(message);
-        emit NewMessage(_msg, msg.sender, block.timestamp, _roomName);
-    }
-
-    // Functions for creating and fetching custom usernames. If a user updates
-    // their username it will update for all of their messages
-    function createUser(string calldata _name) external {
-        addressToUsername[msg.sender] = _name;
-    }
-    // There is no support for returning a struct to web3, so this needs to be
-    // returned as multiple items. This will throw an error if the index is invalid
-    function getMessageByIndexForRoom(string calldata _roomName, uint _index) public view returns (string memory, address, uint) {
-        Message memory message = messages[_roomName][_index];
-        return (message.message, message.user, message.timestamp);
+    // Return all message in chatroom
+    function getMessageByRoom(string calldata _roomName) public view returns (Message[] memory) {
+        return messages[_roomName];
     }
 }

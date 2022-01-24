@@ -11,5 +11,11 @@ export class Configuration {
         }
         return process.env['RPC_SERVER']
       }
+      public get myAddress(): string {
+        if (!process.env['MY_ADDRESS']) {
+          throw new Error('Missing MY_ADDRESS')
+        }
+        return process.env['MY_ADDRESS']
+      }
   }
   
