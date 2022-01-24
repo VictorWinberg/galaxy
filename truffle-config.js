@@ -10,7 +10,7 @@ module.exports = {
    */
   migrations_directory: "./src/contracts/migration",
   contracts_directory: "./src/contracts",
-  contracts_build_directory: './src/contracts/output',
+  contracts_build_directory: './output',
   networks: {
     development: {
       host: "127.0.0.1", // Localhost (default: none)
