@@ -4,7 +4,8 @@
   "description": "",
   "scripts": {
     "start": "nodemon -e ts --exec ts-node server",
-    "ganache": "nodemon ganache"
+    "ganache": "nodemon ganache",
+    "test": "truffle test"
   },
   "author": "",
   "license": "ISC",

@@ -11,6 +11,7 @@ module.exports = {
   migrations_directory: "./server/contracts/migration",
   contracts_directory: "./server/contracts",
   contracts_build_directory: './output',
+  test_directory: "./server/contracts/test",
   networks: {
     development: {
       host: "127.0.0.1", // Localhost (default: none)
