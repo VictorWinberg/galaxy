@@ -137,4 +137,4 @@ blockchain/
 .secrets
 
 # Contract build output
-output
+output/
