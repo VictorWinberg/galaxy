@@ -8,8 +8,8 @@ module.exports = {
    *
    * $ truffle test --network <network-name>
    */
-  migrations_directory: "./src/contracts/migration",
-  contracts_directory: "./src/contracts",
+  migrations_directory: "./server/contracts/migration",
+  contracts_directory: "./server/contracts",
   contracts_build_directory: './output',
   networks: {
     development: {

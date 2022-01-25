@@ -2,10 +2,9 @@
   "name": "web3",
   "version": "1.0.0",
   "description": "",
-  "main": "index.ts",
   "scripts": {
-    "start": "nodemon -e ts --exec ts-node index",
-    "server": "nodemon server"
+    "start": "nodemon -e ts --exec ts-node server",
+    "ganache": "nodemon ganache"
   },
   "author": "",
   "license": "ISC",

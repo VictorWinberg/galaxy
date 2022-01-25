@@ -1,14 +1,16 @@
 const ganache = require("ganache");
-require("dotenv").config()
+require("dotenv").config();
+
+const { GANACHE_PORT, GANACHE_SEED, GANACHE_CHAIN_ID } = process.env;
 
 const options = {
-  seed: process.env.SEED || "random_seed",
+  seed: GANACHE_SEED || "random_seed",
   db_path: "blockchain",
   account_keys_path: ".secrets",
-  chainId: process.env.CHAIN_ID || 1337
+  chainId: GANACHE_CHAIN_ID || 1337,
 };
 const server = ganache.server(options);
-const PORT = Number(process.env.PORT || 8545);
+const PORT = Number(GANACHE_PORT || 8545);
 server.listen(PORT, async (err) => {
   if (err) throw err;
 
