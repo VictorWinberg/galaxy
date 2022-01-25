@@ -8,7 +8,9 @@ module.exports = {
    *
    * $ truffle test --network <network-name>
    */
-
+  migrations_directory: "./src/contracts/migration",
+  contracts_directory: "./src/contracts",
+  contracts_build_directory: './output',
   networks: {
     development: {
       host: "127.0.0.1", // Localhost (default: none)
