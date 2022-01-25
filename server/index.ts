@@ -2,7 +2,7 @@ import Web3 from "web3";
 import "dotenv/config";
 import { getCryptoPrice, checkBlock, accounts, userBalance, callContractMethods } from "./utils";
 import Config, { ENV } from "./configuration";
-const BlockChat = require("./contracts/output/BlockChat.json");
+const BlockChat = require("../output/BlockChat.json");
 
 Config.SET_ENV = ENV.LOCAL
 

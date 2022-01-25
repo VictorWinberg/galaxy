@@ -13,6 +13,8 @@ There are a env-file in root that you need to create locally:
 > You can copy the `.env.example` to `.env` and modify the variables as needed
 
 ## Truffle Setup
+_Truffle is the service allowing us to run migrate smart contracts on the blockchain_
+
 Install truffle to machine by running the following commad: <br />
 `npm install -g truffle` or `sudo npm install -g truffle`
 
@@ -24,13 +26,20 @@ Now you should see that one account has lesser eth, under "Contracts" the "Migra
 
 
 ## Ganache Setup
-_Ganache is a GUI for the server that displays your transaction history and chain state._
+_Ganache is the service running the blockchain server that hosts your transaction history and chain state_
 
-Install Ganache by downloading and running the installer from: <br />
+**Recommended:** Install Ganache by downloading and running the installer from: <br />
 `https://trufflesuite.com/ganache/`
 <br/>
 Start the ganache app and create a fake-blockchain by the "Quickstart" options. <br />
 To see you contracts in genache, go to settings and then "Add Project", locate the `truffle-config.js` and add that it to the project workspace. Then press "Restart". <br/>
+
+**Alternative (without UI):**
+Simply run the following command:
+```
+node ganache.js
+```
+> This uses the environment variables in `.env` with the `GANACHE` prefix
 
 ## Node Setup
 

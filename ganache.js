@@ -10,7 +10,7 @@ const options = {
   chainId: GANACHE_CHAIN_ID || 1337,
 };
 const server = ganache.server(options);
-const PORT = Number(GANACHE_PORT || 8545);
+const PORT = Number(GANACHE_PORT || 7545);
 server.listen(PORT, async (err) => {
   if (err) throw err;
 
