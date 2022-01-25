@@ -16,8 +16,6 @@ contract BlockChat {
     }
 
     mapping(string => Message[]) messages;
-    mapping(address => string) addressToUsername;
-     mapping(address => string) addressToUsernaqme;
 
     constructor() {
         owner = msg.sender;
