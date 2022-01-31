@@ -1,6 +1,7 @@
 {
   "name": "client",
   "version": "0.1.0",
+  "homepage": "https://victorwinberg.github.io/web3",
   "dependencies": {
     "@types/jest": "^27.4.0",
     "@types/node": "^16.11.21",

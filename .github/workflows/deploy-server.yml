@@ -1,4 +1,4 @@
-name: Deploy Release
+name: Deploy Server on Release
 on:
   release:
     types:
