@@ -1,14 +1,11 @@
-name: Deploy Client Application
+name: Deploy Client
 
 on:
   push:
-    branches: 
-      - master
-      - feature/deploy-app
-  # TODO: Remove this after PR-testing
+    branches: [ master ]
 
 jobs:
-  build_test:
+  build_deploy:
     runs-on: ubuntu-latest
 
     strategy:
