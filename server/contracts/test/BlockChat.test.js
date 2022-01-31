@@ -11,7 +11,7 @@ contract("BlockChat", accounts => {
     })
   it("should be deployed", () =>{
     const address = token.address
-    assert.ok(assert)
+    assert.ok(address)
   })
   it("should send a message", async () =>{
     const sendMessage = await token.sendMessage('Hello Blockchain!', '1')
