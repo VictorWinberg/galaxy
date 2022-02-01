@@ -27,5 +27,5 @@ jobs:
       with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
         cwd: client
-        pattern: "build/static/{.,css,js}/*.{js,css}"
+        pattern: "build/{.,css,js}/*.{js,css}"
         strip-hash: "\\b\\w{8}\\."
