@@ -1,7 +1,8 @@
-import { useEffect, useRef } from "react";
+import { FunctionalComponent, h } from "preact";
+import { useRef, useEffect } from "preact/hooks";
 import * as THREE from "three";
 
-function App() {
+const App: FunctionalComponent = () => {
   const ref = useRef<any>();
 
   useEffect(() => {
@@ -24,7 +25,7 @@ function App() {
     animate();
   }, []);
 
-  return <div ref={ref} />;
-}
+  return <div id="preact_root" ref={ref}></div>;
+};
 
 export default App;
