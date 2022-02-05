@@ -6,11 +6,12 @@
     "start": "nodemon -e ts --exec ts-node server",
     "ganache": "nodemon ganache",
     "test": "truffle test",
-    "migrate" : "truffle migrate"
+    "migrate": "truffle migrate"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@openzeppelin/contracts": "^4.4.2",
     "abi-decoder": "^2.4.0",
     "dotenv": "^14.2.0",
     "ganache": "^7.0.0",

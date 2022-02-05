@@ -135,3 +135,12 @@ async function getTransactionsInterval(web3: Web3, fromBlock: number, toBlock: n
     )
   ).flat();
 }
+
+export async function mintToken(web3:Web3,contractABI:any, contractAddress:string,transferTokenToAddress:string) {
+  const contract = new web3.eth.Contract(contractABI, contractAddress);
+  
+
+  contract.methods.mintToken(transferTokenToAddress).send({from: transferTokenToAddress,
+    value: 10,
+    gas: 1000000})
+}
