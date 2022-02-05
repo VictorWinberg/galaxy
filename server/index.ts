@@ -3,6 +3,7 @@ import "dotenv/config";
 import { getCryptoPrice, checkBlock, accounts, userBalance, callContractMethods, mintToken } from "./utils";
 import Config, { ENV } from "./configuration";
 const BlockChat = require("../output/BlockChat.json");
+const GalaxyToken = require("../output/GalaxyToken.json");
 
 Config.SET_ENV = ENV.LOCAL
 
