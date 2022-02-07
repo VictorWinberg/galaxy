@@ -1,8 +1,9 @@
 import Web3 from "web3";
 import "dotenv/config";
-import { getCryptoPrice, checkBlock, accounts, userBalance, callContractMethods } from "./utils";
+import { getCryptoPrice, checkBlock, accounts, userBalance, callContractMethods, mintToken } from "./utils";
 import Config, { ENV } from "./configuration";
 const BlockChat = require("../output/BlockChat.json");
+const GalaxyToken = require("../output/GalaxyToken.json");
 
 Config.SET_ENV = ENV.LOCAL
 
@@ -14,6 +15,7 @@ async function main() {
   await accounts(web3);
   await userBalance(web3, Config.USER_ADDRESS);
   await callContractMethods(web3, Config.USER_ADDRESS, BlockChat.abi, Config.CONTRACT_CHAT_ADDRESS)
+  await mintToken(web3,GalaxyToken.abi,Config.CONTRACT_GALAXY_ADDRESS,Config.USER_ADDRESS)
 }
 
 main();

@@ -59,7 +59,13 @@ export async function callContractMethods(web3: Web3, userAddress: string, contr
   console.log("getMessage", getMessage);
 }
 
-export async function listenToContractEvents(web3: Web3, contractABI: any, contractAddress: string, BLOCK_NUMBER: number, { PRICE }: any) {
+export async function listenToContractEvents(
+  web3: Web3,
+  contractABI: any,
+  contractAddress: string,
+  BLOCK_NUMBER: number,
+  { PRICE }: any
+) {
   const BLOCKS = 1;
 
   const contract = new web3.eth.Contract(contractABI, contractAddress);
@@ -134,4 +140,18 @@ async function getTransactionsInterval(web3: Web3, fromBlock: number, toBlock: n
         })
     )
   ).flat();
+}
+
+export async function mintToken(web3: Web3, contractABI: any, contractAddress: string, transferTokenToAddress: string) {
+  const contract = new web3.eth.Contract(contractABI, contractAddress);
+
+  const method = contract.methods.mintToken(transferTokenToAddress);
+
+  const gas = await method.estimateGas();
+  console.log('estimateGas', gas);
+  
+
+  const mintedToken = await method.send({ from: transferTokenToAddress, value: 10, gas });
+  console.log('mintToken', mintedToken);
+  
 }
