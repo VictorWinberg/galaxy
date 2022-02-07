@@ -1,4 +1,4 @@
-# Web3
+# Galaxy
 
 ## Prerequisite
 
