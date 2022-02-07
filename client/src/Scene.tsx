@@ -1,5 +1,7 @@
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
+import PoissonDiskSampling from "poisson-disk-sampling";
+import seedrandom from "seedrandom";
 
 type Props = {
   renderer: THREE.WebGLRenderer;
@@ -38,18 +40,6 @@ function Scene({ renderer, camera }: Props) {
     scene.add(ambLight);
 
     // Meshes
-    const plane = new THREE.Mesh(
-      new THREE.PlaneGeometry(100, 100, 10, 10),
-      new THREE.MeshStandardMaterial({
-        color: 0xffffaa,
-      })
-    );
-    plane.castShadow = false;
-    plane.receiveShadow = true;
-    plane.position.set(0, -3, 0);
-    plane.rotation.set(-Math.PI / 2, 0, 0);
-    scene.add(plane);
-
     const sphere = new THREE.Mesh(
       new THREE.SphereGeometry(2, 32, 16),
       new THREE.MeshStandardMaterial({
@@ -60,6 +50,32 @@ function Scene({ renderer, camera }: Props) {
     sphere.castShadow = true;
     sphere.receiveShadow = true;
     scene.add(sphere);
+
+    const size = 1000;
+
+    var p = new PoissonDiskSampling(
+      {
+        shape: [size, size, size],
+        minDistance: 100,
+        maxDistance: 300,
+        tries: 10,
+      },
+      seedrandom("Hello World!")
+    );
+    var points = p.fill();
+
+    console.log("planets", points.length);
+
+    points.forEach(([x, y, z]) => {
+      const sphere = new THREE.Mesh(
+        new THREE.SphereGeometry(2, 32, 16),
+        new THREE.MeshStandardMaterial({
+          color: 0x00ccaa,
+        })
+      );
+      sphere.position.set(x - size / 2, y - size / 2, z - size / 2);
+      scene.add(sphere);
+    });
 
     var wireframe = new THREE.LineSegments(
       new THREE.EdgesGeometry(sphere.geometry),
