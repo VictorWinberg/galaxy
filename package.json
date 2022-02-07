@@ -17,6 +17,7 @@
     "ganache": "^7.0.0",
     "node-fetch": "^2.6.7",
     "nodemon": "^2.0.15",
+    "seedrandom": "^3.0.5",
     "ts-node": "^10.4.0",
     "typescript": "^4.5.4",
     "web3": "^1.7.0"

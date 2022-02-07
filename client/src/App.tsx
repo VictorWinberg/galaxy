@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useState } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+import Random from "./Random";
 import Scene from "./Scene";
 
 function App() {
@@ -50,6 +51,7 @@ function App() {
   return (
     <>
       <Scene renderer={renderer} camera={camera} />
+      <Random/>
     </>
   );
 }
