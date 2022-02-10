@@ -16,7 +16,7 @@ contract GalaxyToken is ERC721URIStorage, Ownable {
     event MintedPlanet(string planetName, uint256 location, uint256 timestamp);
 
     struct Planet {
-        string OwnerAddressName;
+        string OwnerName;
         address OwnerAddress;
         uint timestamp;
     }
@@ -56,7 +56,7 @@ contract GalaxyToken is ERC721URIStorage, Ownable {
         view
         returns (bool) {
         Planet memory planet = claimedPlanets[planetSeed];
-        uint256 len = bytes(planet.OwnerAddressName).length;
+        uint256 len = bytes(planet.OwnerName).length;
         if (len > 0) {
             return true;
         }
