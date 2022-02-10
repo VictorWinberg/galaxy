@@ -11,9 +11,13 @@ contract GalaxyToken is ERC721URIStorage, Ownable {
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
     address payable _owner;
+
+    // Event to keep track of the minted Planets. 
+    event MintedPlanet(string planetName, uint256 location, uint256 timestamp);
+
     struct Planet {
-        string Name;
-        address OwnerName;
+        string OwnerAddressName;
+        address OwnerAddress;
         uint timestamp;
     }
     mapping(uint256 => Planet) claimedPlanets;
@@ -23,7 +27,7 @@ contract GalaxyToken is ERC721URIStorage, Ownable {
         _owner = owner;
     }
 
-    function mintToken(uint256 planetSeed, string calldata planetName, address to)
+    function mintToken(uint256 planetSeed, string calldata ownerName, address to)
         public
         payable
         virtual
@@ -40,16 +44,19 @@ contract GalaxyToken is ERC721URIStorage, Ownable {
         _mint(to, newItemId);
         
         // Internal
-        Planet memory p = Planet(planetName,msg.sender, block.timestamp);
+        Planet memory p = Planet(ownerName,msg.sender, block.timestamp);
         claimedPlanets[planetSeed] = p;
         userPlanets[msg.sender].push(planetSeed);
+
+        //Fire event
+        emit MintedPlanet(ownerName, planetSeed, block.timestamp);
     }
 
     function isClaimed(uint256 planetSeed) public
         view
         returns (bool) {
         Planet memory planet = claimedPlanets[planetSeed];
-        uint256 len = bytes(planet.Name).length;
+        uint256 len = bytes(planet.OwnerAddressName).length;
         if (len > 0) {
             return true;
         }
