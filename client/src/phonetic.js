@@ -136,8 +136,6 @@ const PHONETIC_POST_SIMPLE_LENGTH = 13;
  * @type {{}}
  */
 const REPLACEMENTS = {
-  quu: "que",
-  "qu([aeiou]){2}": "qu$1",
   "[iu]y": "ey",
   eye: "ye",
   "(.)ye$": "$1y",
