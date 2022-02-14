@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { randomizeName } from "./utils";
 
 const UI = () => {
