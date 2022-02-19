@@ -28,7 +28,6 @@ function App() {
     camera.position.set(0, 2, 5);
     setCamera(camera);
 
-    // Controls
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.target.set(0, 0, 0);
     controls.update();
