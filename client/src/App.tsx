@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useState } from "react";
 import * as THREE from "three";
-import { FlyControls } from "three/examples/jsm/controls/FlyControls";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+import UI from "./UI";
 import Scene from "./Scene";
 
 function App() {
@@ -27,12 +28,9 @@ function App() {
     camera.position.set(0, 2, 5);
     setCamera(camera);
 
-    // Controls
-    const controls = new FlyControls(camera, renderer.domElement);
-    const clock = new THREE.Clock();
-
-    // Put in render
-    controls.update(clock.getDelta());
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.target.set(0, 0, 0);
+    controls.update();
   }, []);
 
   useLayoutEffect(() => {
@@ -51,6 +49,7 @@ function App() {
 
   return (
     <>
+      <UI/>
       <Scene renderer={renderer} camera={camera} />
     </>
   );
