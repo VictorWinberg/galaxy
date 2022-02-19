@@ -1,14 +1,20 @@
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
+<<<<<<< HEAD
+=======
+import { FlyControls } from "three/examples/jsm/controls/FlyControls";
+>>>>>>> 223ebefa0df210895b59cb320799d0c19b622709
 import PoissonDiskSampling from "poisson-disk-sampling";
 import seedrandom from "seedrandom";
 
 type Props = {
   renderer: THREE.WebGLRenderer;
   camera: THREE.PerspectiveCamera;
+  controls: FlyControls
+  clock: THREE.Clock
 };
 
-function Scene({ renderer, camera }: Props) {
+function Scene({ renderer, camera, controls, clock }: Props) {
   const frameId = useRef(-1);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -64,8 +70,6 @@ function Scene({ renderer, camera }: Props) {
     );
     var points = p.fill();
 
-    console.log("planets", points.length);
-
     points.forEach(([x, y, z]) => {
       const sphere = new THREE.Mesh(
         new THREE.SphereGeometry(2, 32, 16),
@@ -87,12 +91,13 @@ function Scene({ renderer, camera }: Props) {
     const animate = function () {
       sphere.rotation.x += 0.001;
       sphere.rotation.y += 0.001;
+      controls.update(clock.getDelta());
       renderer.render(scene, camera);
       frameId.current = requestAnimationFrame(animate);
     };
     frameId.current = requestAnimationFrame(animate);
     return () => cancelAnimationFrame(frameId.current);
-  }, [renderer, camera]);
+  }, [renderer, camera, controls, clock]);
 
   return (
     <div id="scene" ref={ref}>
