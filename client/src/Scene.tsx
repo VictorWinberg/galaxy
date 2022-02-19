@@ -1,5 +1,7 @@
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
+import vShader from './shaders/vertexShader.glsl'
+import fShader from './shaders/fragmentShader.glsl'
 
 type Props = {
   renderer: THREE.WebGLRenderer;
@@ -9,7 +11,7 @@ type Props = {
 function Scene({ renderer, camera }: Props) {
   const frameId = useRef(-1);
   const ref = useRef<HTMLDivElement>(null);
-
+  let time = 0
   useEffect(() => {
     ref.current!.firstChild!.replaceWith(renderer.domElement);
 
@@ -50,12 +52,38 @@ function Scene({ renderer, camera }: Props) {
     plane.rotation.set(-Math.PI / 2, 0, 0);
     scene.add(plane);
 
+
+    const uniforms = {
+			u_time : {
+				type : "f",
+				value : 0.0
+			},
+			u_frame : {
+				type : "f",
+				value : 0.0
+			},
+			u_resolution : {
+				type : "v2",
+				value : new THREE.Vector2(window.innerWidth, window.innerHeight)
+						.multiplyScalar(window.devicePixelRatio)
+			},
+			u_mouse : {
+				type : "v2",
+				value : new THREE.Vector2(0.7 * window.innerWidth, window.innerHeight)
+						.multiplyScalar(window.devicePixelRatio)
+			}
+		};
+
+
+    const m = new THREE.ShaderMaterial({
+      uniforms: uniforms,
+      vertexShader: vShader,
+      fragmentShader: fShader
+    })
     const sphere = new THREE.Mesh(
       new THREE.SphereGeometry(2, 32, 16),
-      new THREE.MeshStandardMaterial({
-        color: 0x00ccaa,
-      })
-    );
+      m
+      );
     sphere.position.set(0, 0, 0);
     sphere.castShadow = true;
     sphere.receiveShadow = true;
