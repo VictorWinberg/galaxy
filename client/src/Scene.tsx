@@ -1,12 +1,17 @@
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
+import { FlyControls } from "three/examples/jsm/controls/FlyControls";
+import PoissonDiskSampling from "poisson-disk-sampling";
+import seedrandom from "seedrandom";
 
 type Props = {
   renderer: THREE.WebGLRenderer;
   camera: THREE.PerspectiveCamera;
+  controls: FlyControls
+  clock: THREE.Clock
 };
 
-function Scene({ renderer, camera }: Props) {
+function Scene({ renderer, camera, controls, clock }: Props) {
   const frameId = useRef(-1);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -38,18 +43,6 @@ function Scene({ renderer, camera }: Props) {
     scene.add(ambLight);
 
     // Meshes
-    const plane = new THREE.Mesh(
-      new THREE.PlaneGeometry(100, 100, 10, 10),
-      new THREE.MeshStandardMaterial({
-        color: 0xffffaa,
-      })
-    );
-    plane.castShadow = false;
-    plane.receiveShadow = true;
-    plane.position.set(0, -3, 0);
-    plane.rotation.set(-Math.PI / 2, 0, 0);
-    scene.add(plane);
-
     const sphere = new THREE.Mesh(
       new THREE.SphereGeometry(2, 32, 16),
       new THREE.MeshStandardMaterial({
@@ -61,6 +54,30 @@ function Scene({ renderer, camera }: Props) {
     sphere.receiveShadow = true;
     scene.add(sphere);
 
+    const size = 1000;
+
+    var p = new PoissonDiskSampling(
+      {
+        shape: [size, size, size],
+        minDistance: 100,
+        maxDistance: 300,
+        tries: 10,
+      },
+      seedrandom("Hello World!")
+    );
+    var points = p.fill();
+
+    points.forEach(([x, y, z]) => {
+      const sphere = new THREE.Mesh(
+        new THREE.SphereGeometry(2, 32, 16),
+        new THREE.MeshStandardMaterial({
+          color: 0x00ccaa,
+        })
+      );
+      sphere.position.set(x, y, z);
+      scene.add(sphere);
+    });
+
     var wireframe = new THREE.LineSegments(
       new THREE.EdgesGeometry(sphere.geometry),
       new THREE.LineBasicMaterial({ color: 0xffffff })
@@ -71,12 +88,13 @@ function Scene({ renderer, camera }: Props) {
     const animate = function () {
       sphere.rotation.x += 0.001;
       sphere.rotation.y += 0.001;
+      controls.update(clock.getDelta());
       renderer.render(scene, camera);
       frameId.current = requestAnimationFrame(animate);
     };
     frameId.current = requestAnimationFrame(animate);
     return () => cancelAnimationFrame(frameId.current);
-  }, [renderer, camera]);
+  }, [renderer, camera, controls, clock]);
 
   return (
     <div id="scene" ref={ref}>

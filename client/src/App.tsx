@@ -1,12 +1,14 @@
 import { useEffect, useLayoutEffect, useState } from "react";
 import * as THREE from "three";
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+import { FlyControls } from "three/examples/jsm/controls/FlyControls";
 import UI from "./UI";
 import Scene from "./Scene";
 
 function App() {
   const [renderer, setRenderer] = useState<THREE.WebGLRenderer>();
   const [camera, setCamera] = useState<THREE.PerspectiveCamera>();
+  const [controls, setControls] = useState<FlyControls>();
+  const [clock, setClock] = useState<THREE.Clock>();
 
   useEffect(() => {
     // WebGLRenderer
@@ -29,9 +31,16 @@ function App() {
     setCamera(camera);
 
     // Controls
-    const controls = new OrbitControls(camera, renderer.domElement);
-    controls.target.set(0, 0, 0);
-    controls.update();
+    const controls = new FlyControls(camera, renderer.domElement);
+    controls.movementSpeed = 10;
+    controls.rollSpeed = Math.PI / 24;
+    controls.autoForward = false;
+    controls.dragToLook = false;
+
+    const clock = new THREE.Clock();
+
+    setControls(controls);
+    setClock(clock)
   }, []);
 
   useLayoutEffect(() => {
@@ -43,15 +52,16 @@ function App() {
     }
 
     window.addEventListener("resize", OnWindowResize);
+
     return () => window.removeEventListener("resize", OnWindowResize);
   }, [camera, renderer]);
 
-  if (!renderer || !camera) return null;
+  if (!renderer || !camera || !controls || !clock) return null;
 
   return (
     <>
       <UI/>
-      <Scene renderer={renderer} camera={camera} />
+      <Scene renderer={renderer} camera={camera} controls={controls} clock={clock} />
     </>
   );
 }
