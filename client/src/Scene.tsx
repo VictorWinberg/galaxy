@@ -73,7 +73,7 @@ function Scene({ renderer, camera }: Props) {
           color: 0x00ccaa,
         })
       );
-      sphere.position.set(x - size / 2, y - size / 2, z - size / 2);
+      sphere.position.set(x, y, z);
       scene.add(sphere);
     });
 
