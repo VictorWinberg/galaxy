@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import Peer from "peerjs";
 import { useEffect, useState } from "react";
 
@@ -9,11 +10,16 @@ function Chat() {
   const [msg, setMsg] = useState<string>("");
   const [chat, setChat] = useState<string[]>([]);
 
-  function initializePeer(peer: Peer) {
-    peer.on("open", () => {
-      setPeer(peer);
+  function initializePeer(_peer: Peer) {
+    _peer.on("open", () => {
+      setPeer(_peer);
+
+      if (peer) {
+        Object.keys(peer.connections).forEach((peerId) => connectPeer(_peer, peerId));
+        peer.destroy();
+      }
     });
-    peer.on("connection", (conn) => {
+    _peer.on("connection", (conn) => {
       conn.on("open", () => {
         console.log("conn_inc::open");
       });
@@ -21,21 +27,28 @@ function Chat() {
         console.log("conn_inc::data", data);
         setChat((prev) => [...prev, `RECEIVED: ${JSON.stringify(data)}`]);
 
-        if (peer.id === HOST && data.method === "GET_CONNECTIONS") {
-          conn.send({ method: "SET_CONNECTIONS", payload: Object.keys(peer.connections) });
+        if (_peer.id === HOST && data.method === "GET_CONNECTIONS") {
+          const payload = Object.entries(_peer.connections)
+            .filter(([_, value]: any) => value.length > 0)
+            .map(([key]) => key);
+
+          conn.send({
+            method: "SET_CONNECTIONS",
+            payload,
+          });
         }
       });
       conn.on("close", () => {
         console.log("conn_inc::close");
       });
     });
-    peer.on("disconnected", () => {
+    _peer.on("disconnected", () => {
       console.log("conn::disconnected");
     });
-    peer.on("close", function () {
+    _peer.on("close", function () {
       console.log("peer::close");
     });
-    peer.on("error", function (err) {
+    _peer.on("error", function (err) {
       if (err.type === "peer-unavailable") {
         initializePeer(new Peer(HOST, { debug: 2 }));
       } else {
@@ -44,15 +57,15 @@ function Chat() {
     });
   }
 
-  function connectPeer(peerId: string) {
-    if (!peer) throw new Error("Peer undefined");
-    if (peerId === peer.id || Object.keys(peer.connections).includes(peerId)) return;
+  function connectPeer(_peer: Peer, otherPeerId: string) {
+    if (!_peer) throw new Error("Peer undefined");
+    if (otherPeerId === _peer.id || Object.keys(_peer.connections).includes(otherPeerId)) return;
 
-    const conn = peer.connect(peerId);
+    const conn = _peer.connect(otherPeerId);
     conn.on("open", () => {
       console.log("conn_peer::open");
 
-      if (peerId === HOST) {
+      if (otherPeerId === HOST) {
         const obj = { method: "GET_CONNECTIONS" };
         conn.send(obj);
         setChat((prev) => [...prev, `SENT: ${JSON.stringify(obj)}`]);
@@ -63,13 +76,13 @@ function Chat() {
       setChat((prev) => [...prev, `RECEIVED: ${JSON.stringify(data)}`]);
 
       if (conn.peer === HOST && data.method === "SET_CONNECTIONS") {
-        data.payload.forEach((peerId: string) => connectPeer(peerId));
+        data.payload.forEach((otherPeerId: string) => connectPeer(_peer, otherPeerId));
       }
     });
     conn.on("close", () => {
       console.log("conn_peer::close");
 
-      if (peerId === HOST) {
+      if (otherPeerId === HOST) {
         const peer = new Peer(HOST, { debug: 2 });
         initializePeer(peer);
       }
@@ -80,20 +93,24 @@ function Chat() {
     if (!peer) throw new Error("Peer undefined");
 
     setChat((prev) => [...prev, `SEND: ${msg}`]);
-    Object.values(peer.connections).forEach((conn: any) => conn[0].send(msg));
+    Object.values(peer.connections).forEach((connections: any) =>
+      connections.forEach((c: Peer.DataConnection) => c.send(msg))
+    );
   }
 
   // initialize peer
   useEffect(() => {
     const peer = new Peer({ debug: 2 });
     initializePeer(peer);
-    return Object.values(peer.connections).forEach((conn: any) => conn[0].close());
+    return Object.values(peer.connections).forEach((connections: any) =>
+      connections.forEach((c: Peer.DataConnection) => c.close())
+    );
   }, []);
 
   // connect to peer host or become host
   useEffect(() => {
     if (peer && peer.id !== HOST) {
-      connectPeer(HOST);
+      connectPeer(peer, HOST);
     }
   }, [peer]);
 
