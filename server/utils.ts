@@ -8,7 +8,8 @@ export async function accounts(web3: Web3) {
 }
 
 export async function getCryptoPrice() {
-  const cryptoUrl = "https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=BTC,USD,EUR,SEK,ETH";
+  const cryptoUrl =
+    "https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=BTC,USD,EUR,SEK,ETH";
   const res = await fetch(cryptoUrl);
   const PRICE = await res.json();
   console.log("PRICE -->", PRICE);
@@ -34,15 +35,29 @@ export async function userBalance(web3: Web3, address: string) {
   console.log("MY USER -->", web3.utils.fromWei(balance, "ether"), "eth");
 }
 
-export async function userTransactions(web3: Web3, address: string, BLOCK_NUMBER: number) {
+export async function userTransactions(
+  web3: Web3,
+  address: string,
+  BLOCK_NUMBER: number
+) {
   const WHERE = { from: address };
   const BLOCKS = 10;
 
-  const userTx = await getTransactionsInterval(web3, BLOCK_NUMBER - BLOCKS, BLOCK_NUMBER, WHERE);
+  const userTx = await getTransactionsInterval(
+    web3,
+    BLOCK_NUMBER - BLOCKS,
+    BLOCK_NUMBER,
+    WHERE
+  );
   console.log(`USER ${address.slice(0, 8)} TRANSACTIONS -->`, userTx);
 }
 
-export async function callContractMethods(web3: Web3, userAddress: string, contractABI: any, contractAddress: string) {
+export async function callContractMethods(
+  web3: Web3,
+  userAddress: string,
+  contractABI: any,
+  contractAddress: string
+) {
   const contract = new web3.eth.Contract(contractABI, contractAddress);
 
   const method = contract.methods.sendMessage("Hello World!", "1");
@@ -53,9 +68,11 @@ export async function callContractMethods(web3: Web3, userAddress: string, contr
   // const sendMessage = await method.send({ from: userAddress, gas });
   // console.log("sendMessage", sendMessage);
 
-  const getMessage = await contract.methods.getMessageByIndexForRoom("1", 1).call({
-    from: userAddress,
-  });
+  const getMessage = await contract.methods
+    .getMessageByIndexForRoom("1", 1)
+    .call({
+      from: userAddress,
+    });
   console.log("getMessage", getMessage);
 }
 
@@ -122,7 +139,12 @@ export function objContains(parent: any, child: any): boolean {
   });
 }
 
-async function getTransactionsInterval(web3: Web3, fromBlock: number, toBlock: number, where: any) {
+async function getTransactionsInterval(
+  web3: Web3,
+  fromBlock: number,
+  toBlock: number,
+  where: any
+) {
   // Not very optimal since it needs to scan through all the blocks
   return (
     await Promise.all(
@@ -142,36 +164,47 @@ async function getTransactionsInterval(web3: Web3, fromBlock: number, toBlock: n
   ).flat();
 }
 
-export async function mintToken(web3: Web3, contractABI: any, contractAddress: string, transferTokenToAddress: string) {
+export async function mintToken(
+  web3: Web3,
+  contractABI: any,
+  contractAddress: string,
+  transferTokenToAddress: string
+) {
   const contract = new web3.eth.Contract(contractABI, contractAddress);
 
   // function mintToken(uint256 planetSeed, string calldata planetName, address to)
-  const method = contract.methods.mintToken(6,'Anton&Anton',transferTokenToAddress);
+  const method = contract.methods.mintToken(
+    6,
+    "Anton&Anton",
+    transferTokenToAddress
+  );
 
   const _gas = await method.estimateGas({
-    from: '0xE41a87df166ba1294E3610127b5361Cc1e091E20',
-    value: 10
+    from: "0xE41a87df166ba1294E3610127b5361Cc1e091E20",
+    value: 10,
   });
-  console.log('estimateGas', _gas);
-  const mintedToken = await method.send({ from: transferTokenToAddress, value: 10, gas: _gas });
-  console.log('mintToken', mintedToken);
+  console.log("estimateGas", _gas);
+  const mintedToken = await method.send({
+    from: transferTokenToAddress,
+    value: 10,
+    gas: _gas,
+  });
+  console.log("mintToken", mintedToken);
 
+  const shouldBeTrue = await contract.methods.isClaimed(1).call();
+  console.log("Should be true", shouldBeTrue);
 
-  const shouldBeTrue = await contract.methods.isClaimed(1).call()
-  console.log('Should be true', shouldBeTrue)
+  const shouldBeFalse = await contract.methods.isClaimed(9999999999).call();
+  console.log("Should be false", shouldBeFalse);
 
-  
-  const shouldBeFalse = await contract.methods.isClaimed(9999999999).call()
-  console.log('Should be false', shouldBeFalse)
-
-
-  const shouldAllUsersPlanets = await contract.methods.getUserPlanets(transferTokenToAddress).call()
-  console.log('Should get users planets', shouldAllUsersPlanets)
+  const shouldAllUsersPlanets = await contract.methods
+    .getUserPlanets(transferTokenToAddress)
+    .call();
+  console.log("Should get users planets", shouldAllUsersPlanets);
 
   for (let index = 0; index < shouldAllUsersPlanets.length; index++) {
     const element = shouldAllUsersPlanets[index];
-    const shouldGetPlanet = await contract.methods.getPlanet(element).call()
-    console.log('Planet', shouldGetPlanet)
-    
+    const shouldGetPlanet = await contract.methods.getPlanet(element).call();
+    console.log("Planet", shouldGetPlanet);
   }
 }

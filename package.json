@@ -20,5 +20,25 @@
     "ts-node": "^10.4.0",
     "typescript": "^4.5.4",
     "web3": "^1.7.0"
+  },
+  "devDependencies": {
+    "eslint": "^8.9.0",
+    "husky": "^4.3.8",
+    "lint-staged": "^10.5.4",
+    "prettier": "^2.5.1"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "client/**/*.{ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "server/**/*.{js,ts}": [
+      "prettier --write"
+    ]
   }
 }
