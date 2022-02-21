@@ -40,7 +40,7 @@ function App() {
     const clock = new THREE.Clock();
 
     setControls(controls);
-    setClock(clock)
+    setClock(clock);
   }, []);
 
   useLayoutEffect(() => {
@@ -60,8 +60,13 @@ function App() {
 
   return (
     <>
-      <UI/>
-      <Scene renderer={renderer} camera={camera} controls={controls} clock={clock} />
+      <UI />
+      <Scene
+        renderer={renderer}
+        camera={camera}
+        controls={controls}
+        clock={clock}
+      />
     </>
   );
 }
