@@ -1,14 +1,14 @@
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { FlyControls } from "three/examples/jsm/controls/FlyControls";
-import PoissonDiskSampling from "poisson-disk-sampling";
-import seedrandom from "seedrandom";
+import { generateNearbyChunks } from "./ChunkGenerator";
+import type { Mesh } from "three";
 
 type Props = {
   renderer: THREE.WebGLRenderer;
   camera: THREE.PerspectiveCamera;
-  controls: FlyControls
-  clock: THREE.Clock
+  controls: FlyControls;
+  clock: THREE.Clock;
 };
 
 function Scene({ renderer, camera, controls, clock }: Props) {
@@ -54,30 +54,6 @@ function Scene({ renderer, camera, controls, clock }: Props) {
     sphere.receiveShadow = true;
     scene.add(sphere);
 
-    const size = 1000;
-
-    var p = new PoissonDiskSampling(
-      {
-        shape: [size, size, size],
-        minDistance: 100,
-        maxDistance: 300,
-        tries: 10,
-      },
-      seedrandom("Hello World!")
-    );
-    var points = p.fill();
-
-    points.forEach(([x, y, z]) => {
-      const sphere = new THREE.Mesh(
-        new THREE.SphereGeometry(2, 32, 16),
-        new THREE.MeshStandardMaterial({
-          color: 0x00ccaa,
-        })
-      );
-      sphere.position.set(x, y, z);
-      scene.add(sphere);
-    });
-
     var wireframe = new THREE.LineSegments(
       new THREE.EdgesGeometry(sphere.geometry),
       new THREE.LineBasicMaterial({ color: 0xffffff })
@@ -88,6 +64,10 @@ function Scene({ renderer, camera, controls, clock }: Props) {
     const animate = function () {
       sphere.rotation.x += 0.001;
       sphere.rotation.y += 0.001;
+      const { x, y, z } = camera.position;
+      const spheres: Mesh[] = generateNearbyChunks(x, y, z);
+      spheres.forEach((s) => scene.add(s));
+
       controls.update(clock.getDelta());
       renderer.render(scene, camera);
       frameId.current = requestAnimationFrame(animate);
