@@ -1,18 +1,25 @@
 import { useEffect, useLayoutEffect, useState } from "react";
 import * as THREE from "three";
 import { FlyControls } from "three/examples/jsm/controls/FlyControls";
+import { GUI } from "dat.gui";
 import UI from "./UI";
 import Scene from "./Scene";
 
 function App() {
   const [renderer, setRenderer] = useState<THREE.WebGLRenderer>();
   const [camera, setCamera] = useState<THREE.PerspectiveCamera>();
+  const [gui, setGUI] = useState<dat.GUI>();
   const [controls, setControls] = useState<FlyControls>();
   const [clock, setClock] = useState<THREE.Clock>();
 
   useEffect(() => {
     // WebGLRenderer
+    const canvas = document.createElement("canvas");
+    const context = canvas.getContext("webgl2", { alpha: false });
+    if (!context) throw Error("WebGL2 is not supported");
     const renderer = new THREE.WebGLRenderer({
+      canvas,
+      context,
       antialias: true,
     });
     renderer.shadowMap.enabled = true;
@@ -24,22 +31,30 @@ function App() {
     // Camera
     const fov = 60;
     const aspect = window.innerWidth / window.innerHeight;
-    const near = 1.0;
-    const far = 1000;
+    const near = 0.1;
+    const far = 100000.0;
     const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
-    camera.position.set(0, 2, 5);
+    camera.position.set(0, 0, 10000);
     setCamera(camera);
 
     // Controls
-    const controls = new FlyControls(camera, renderer.domElement);
-    controls.movementSpeed = 10;
-    controls.rollSpeed = Math.PI / 24;
-    controls.autoForward = false;
-    controls.dragToLook = false;
+    // const controls = new FlyControls(camera, renderer.domElement);
+    // controls.movementSpeed = 10;
+    // controls.rollSpeed = Math.PI / 24;
+    // controls.autoForward = false;
+    // controls.dragToLook = false;
+    // setControls(controls);
+
+    // GUI
+    const gui = new GUI();
+    const cameraFolder = gui.addFolder("Camera");
+    cameraFolder.add(camera.position, "x", -10000, 10000);
+    cameraFolder.add(camera.position, "y", -10000, 10000);
+    cameraFolder.add(camera.position, "z", -10000, 10000);
+    cameraFolder.open();
+    setGUI(gui);
 
     const clock = new THREE.Clock();
-
-    setControls(controls);
     setClock(clock);
   }, []);
 
@@ -56,17 +71,12 @@ function App() {
     return () => window.removeEventListener("resize", OnWindowResize);
   }, [camera, renderer]);
 
-  if (!renderer || !camera || !controls || !clock) return null;
+  if (!renderer || !camera || !clock || !gui) return null;
 
   return (
     <>
       <UI />
-      <Scene
-        renderer={renderer}
-        camera={camera}
-        controls={controls}
-        clock={clock}
-      />
+      <Scene renderer={renderer} camera={camera} gui={gui} clock={clock} />
     </>
   );
 }

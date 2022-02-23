@@ -1,17 +1,18 @@
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
+import type { Mesh } from "three";
 import { FlyControls } from "three/examples/jsm/controls/FlyControls";
 import { generateNearbyChunks } from "./ChunkGenerator";
-import type { Mesh } from "three";
+import ProceduralTerrain from "./simondev/main.js";
 
 type Props = {
   renderer: THREE.WebGLRenderer;
   camera: THREE.PerspectiveCamera;
-  controls: FlyControls;
+  gui: dat.GUI;
   clock: THREE.Clock;
 };
 
-function Scene({ renderer, camera, controls, clock }: Props) {
+function Scene({ renderer, camera, gui, clock }: Props) {
   const frameId = useRef(-1);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -20,6 +21,20 @@ function Scene({ renderer, camera, controls, clock }: Props) {
 
     // Scene
     const scene = new THREE.Scene();
+
+    new ProceduralTerrain({ renderer, camera, gui, clock, scene });
+
+    // Background
+    // const loader = new THREE.CubeTextureLoader();
+    // const texture = loader.load([
+    //   "/galaxy/resources/space-posx.jpg",
+    //   "/galaxy/resources/space-negx.jpg",
+    //   "/galaxy/resources/space-posy.jpg",
+    //   "/galaxy/resources/space-negy.jpg",
+    //   "/galaxy/resources/space-posz.jpg",
+    //   "/galaxy/resources/space-negz.jpg",
+    // ]);
+    // scene.background = texture;
 
     // Lights
     const light = new THREE.DirectionalLight(0xffffff, 1.0);
@@ -61,20 +76,20 @@ function Scene({ renderer, camera, controls, clock }: Props) {
     sphere.add(wireframe);
 
     // Animation
-    const animate = function () {
-      sphere.rotation.x += 0.001;
-      sphere.rotation.y += 0.001;
-      const { x, y, z } = camera.position;
-      const spheres: Mesh[] = generateNearbyChunks(x, y, z);
-      spheres.forEach((s) => scene.add(s));
+    // const animate = function () {
+    // sphere.rotation.x += 0.001;
+    // sphere.rotation.y += 0.001;
+    // const { x, y, z } = camera.position;
+    // const spheres: Mesh[] = generateNearbyChunks(x, y, z);
+    // spheres.forEach((s) => scene.add(s));
 
-      controls.update(clock.getDelta());
-      renderer.render(scene, camera);
-      frameId.current = requestAnimationFrame(animate);
-    };
-    frameId.current = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(frameId.current);
-  }, [renderer, camera, controls, clock]);
+    // controls.update(clock.getDelta());
+    // renderer.render(scene, camera);
+    // frameId.current = requestAnimationFrame(animate);
+    // };
+    // frameId.current = requestAnimationFrame(animate);
+    // return () => cancelAnimationFrame(frameId.current);
+  }, [renderer, camera, clock]);
 
   return (
     <div id="scene" ref={ref}>
