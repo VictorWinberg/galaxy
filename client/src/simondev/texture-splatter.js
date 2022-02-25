@@ -1,45 +1,25 @@
-import * as THREE from 'three';
+import * as THREE from "three";
 
-import {math} from './math.js';
-import {spline} from './spline.js';
+import { spline } from "./spline.js";
 
+function sat(x) {
+  return Math.min(Math.max(x, 0.0), 1.0);
+}
 
-export const texture_splatter = (function() {
-
+export const texture_splatter = (function () {
   const _WHITE = new THREE.Color(0x808080);
 
-  const _DEEP_OCEAN = new THREE.Color(0x20020FF);
-  const _SHALLOW_OCEAN = new THREE.Color(0x8080FF);
+  const _DEEP_OCEAN = new THREE.Color(0x20020ff);
+  const _SHALLOW_OCEAN = new THREE.Color(0x8080ff);
   const _BEACH = new THREE.Color(0xd9d592);
-  const _SNOW = new THREE.Color(0xFFFFFF);
+  const _SNOW = new THREE.Color(0xffffff);
   const _ApplyWeightsOREST_TROPICAL = new THREE.Color(0x4f9f0f);
   const _ApplyWeightsOREST_TEMPERATE = new THREE.Color(0x2b960e);
   const _ApplyWeightsOREST_BOREAL = new THREE.Color(0x29c100);
-  
-  const _GREEN = new THREE.Color(0x80FF80);
-  const _RED = new THREE.Color(0xFF8080);
+
+  const _GREEN = new THREE.Color(0x80ff80);
+  const _RED = new THREE.Color(0xff8080);
   const _BLACK = new THREE.Color(0x000000);
-
-
-  class FixedHeightGenerator {
-    constructor() {}
-  
-    Get() {
-      return [50, 1];
-    }
-  }
-  
-
-  class FixedColourGenerator {
-    constructor(params) {
-      this._params = params;
-    }
-  
-    Get() {
-      return this._params.colour;
-    }
-  }
-
 
   class HeightGenerator {
     constructor(generator, position, minRadius, maxRadius) {
@@ -53,7 +33,6 @@ export const texture_splatter = (function() {
     }
   }
 
-
   class TextureSplatter {
     constructor(params) {
       const _colourLerp = (t, p0, p1) => {
@@ -61,10 +40,7 @@ export const texture_splatter = (function() {
 
         return c.lerp(p1, t);
       };
-      this._colourSpline = [
-        new spline.LinearSpline(_colourLerp),
-        new spline.LinearSpline(_colourLerp)
-      ];
+      this._colourSpline = [new spline.LinearSpline(_colourLerp), new spline.LinearSpline(_colourLerp)];
 
       // Arid
       this._colourSpline[0].AddPoint(0.0, new THREE.Color(0xb7a67d));
@@ -86,7 +62,7 @@ export const texture_splatter = (function() {
 
     _BaseColour(x, y, z) {
       const m = this._params.biomeGenerator.Get(x, y, z);
-      const h = math.sat(z / 100.0);
+      const h = sat(z / 100.0);
 
       const c1 = this._colourSpline[0].Get(h);
       const c2 = this._colourSpline[1].Get(h);
@@ -94,9 +70,9 @@ export const texture_splatter = (function() {
       let c = c1.lerp(c2, m);
 
       if (h < 0.1) {
-        c = c.lerp(new THREE.Color(0x54380e), 1.0 - math.sat(h / 0.05));
+        c = c.lerp(new THREE.Color(0x54380e), 1.0 - sat(h / 0.05));
       }
-      return c;      
+      return c;
     }
 
     _Colour(x, y, z) {
@@ -112,14 +88,14 @@ export const texture_splatter = (function() {
       const h = p.z / 100.0;
 
       const types = {
-        dirt: {index: 0, strength: 0.0},
-        grass: {index: 1, strength: 0.0},
-        gravel: {index: 2, strength: 0.0},
-        rock: {index: 3, strength: 0.0},
-        snow: {index: 4, strength: 0.0},
-        snowrock: {index: 5, strength: 0.0},
-        cobble: {index: 6, strength: 0.0},
-        sandyrock: {index: 7, strength: 0.0},
+        dirt: { index: 0, strength: 0.0 },
+        grass: { index: 1, strength: 0.0 },
+        gravel: { index: 2, strength: 0.0 },
+        rock: { index: 3, strength: 0.0 },
+        snow: { index: 4, strength: 0.0 },
+        snowrock: { index: 5, strength: 0.0 },
+        cobble: { index: 6, strength: 0.0 },
+        sandyrock: { index: 7, strength: 0.0 },
       };
 
       function _ApplyWeights(dst, v, m) {
@@ -127,28 +103,28 @@ export const texture_splatter = (function() {
           types[k].strength *= m;
         }
         types[dst].strength = v;
-      };
+      }
 
       types.grass.strength = 1.0;
-      _ApplyWeights('gravel', 1.0 - m, m);
+      _ApplyWeights("gravel", 1.0 - m, m);
 
       if (h < 0.2) {
-        const s = 1.0 - math.sat((h - 0.1) / 0.05);
-        _ApplyWeights('cobble', s, 1.0 - s);
+        const s = 1.0 - sat((h - 0.1) / 0.05);
+        _ApplyWeights("cobble", s, 1.0 - s);
 
         if (h < 0.1) {
-          const s = 1.0 - math.sat((h - 0.05) / 0.05);
-          _ApplyWeights('sandyrock', s, 1.0 - s);
+          const s = 1.0 - sat((h - 0.05) / 0.05);
+          _ApplyWeights("sandyrock", s, 1.0 - s);
         }
       } else {
         if (h > 0.125) {
-          const s = (math.sat((h - 0.125) / 1.25));
-          _ApplyWeights('rock', s, 1.0 - s);
+          const s = sat((h - 0.125) / 1.25);
+          _ApplyWeights("rock", s, 1.0 - s);
         }
 
         if (h > 1.5) {
-          const s = math.sat((h - 0.75) / 2.0);
-          _ApplyWeights('snow', s, 1.0 - s);
+          const s = sat((h - 0.75) / 2.0);
+          _ApplyWeights("snow", s, 1.0 - s);
         }
       }
 
@@ -183,5 +159,5 @@ export const texture_splatter = (function() {
   return {
     HeightGenerator: HeightGenerator,
     TextureSplatter: TextureSplatter,
-  }
+  };
 })();

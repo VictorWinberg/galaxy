@@ -8,11 +8,12 @@ import ProceduralTerrain from "./simondev/main.js";
 type Props = {
   renderer: THREE.WebGLRenderer;
   camera: THREE.PerspectiveCamera;
+  controls: FlyControls;
   gui: dat.GUI;
   clock: THREE.Clock;
 };
 
-function Scene({ renderer, camera, gui, clock }: Props) {
+function Scene({ renderer, camera, controls, gui, clock }: Props) {
   const frameId = useRef(-1);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -22,19 +23,19 @@ function Scene({ renderer, camera, gui, clock }: Props) {
     // Scene
     const scene = new THREE.Scene();
 
-    new ProceduralTerrain({ renderer, camera, gui, clock, scene });
+    const game = new ProceduralTerrain({ renderer, camera, gui, clock, scene });
 
     // Background
-    // const loader = new THREE.CubeTextureLoader();
-    // const texture = loader.load([
-    //   "/galaxy/resources/space-posx.jpg",
-    //   "/galaxy/resources/space-negx.jpg",
-    //   "/galaxy/resources/space-posy.jpg",
-    //   "/galaxy/resources/space-negy.jpg",
-    //   "/galaxy/resources/space-posz.jpg",
-    //   "/galaxy/resources/space-negz.jpg",
-    // ]);
-    // scene.background = texture;
+    const loader = new THREE.CubeTextureLoader();
+    const texture = loader.load([
+      "/galaxy/resources/space-posx.jpg",
+      "/galaxy/resources/space-negx.jpg",
+      "/galaxy/resources/space-posy.jpg",
+      "/galaxy/resources/space-negy.jpg",
+      "/galaxy/resources/space-posz.jpg",
+      "/galaxy/resources/space-negz.jpg",
+    ]);
+    scene.background = texture;
 
     // Lights
     const light = new THREE.DirectionalLight(0xffffff, 1.0);
@@ -76,19 +77,21 @@ function Scene({ renderer, camera, gui, clock }: Props) {
     sphere.add(wireframe);
 
     // Animation
-    // const animate = function () {
-    // sphere.rotation.x += 0.001;
-    // sphere.rotation.y += 0.001;
-    // const { x, y, z } = camera.position;
-    // const spheres: Mesh[] = generateNearbyChunks(x, y, z);
-    // spheres.forEach((s) => scene.add(s));
+    const animate = function (t: number) {
+      sphere.rotation.x += 0.001;
+      sphere.rotation.y += 0.001;
 
-    // controls.update(clock.getDelta());
-    // renderer.render(scene, camera);
-    // frameId.current = requestAnimationFrame(animate);
-    // };
-    // frameId.current = requestAnimationFrame(animate);
-    // return () => cancelAnimationFrame(frameId.current);
+      // const { x, y, z } = camera.position;
+      // const spheres: Mesh[] = generateNearbyChunks(x, y, z);
+      // spheres.forEach((s) => scene.add(s));
+
+      controls.update(clock.getDelta());
+      renderer.render(scene, camera);
+      game._terrain?.Update();
+      frameId.current = requestAnimationFrame(animate);
+    };
+    frameId.current = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(frameId.current);
   }, [renderer, camera, clock]);
 
   return (

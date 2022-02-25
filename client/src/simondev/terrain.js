@@ -1,9 +1,9 @@
 import * as THREE from "three";
 
-import { noise } from "./noise.js";
-import { quadtree } from "./quadtree.js";
+import { Noise } from "./noise.js";
+import { CubeQuadTree } from "./quadtree.js";
 import { terrain_shader } from "./terrain-shader.js";
-import { terrain_builder_threaded } from "./terrain-builder-threaded.js";
+import TerrainChunkRebuilderThreaded from "./terrain-builder-threaded.js";
 import { texture_splatter } from "./texture-splatter.js";
 import { textures } from "./textures.js";
 import { utils } from "./utils.js";
@@ -78,7 +78,7 @@ export default class TerrainChunkManager {
       side: THREE.FrontSide,
     });
 
-    this._builder = new terrain_builder_threaded.TerrainChunkRebuilder_Threaded();
+    this._builder = new TerrainChunkRebuilderThreaded();
 
     this._InitNoise(params);
     this._InitBiomes(params);
@@ -108,7 +108,7 @@ export default class TerrainChunkManager {
     noiseRollup.add(params.guiParams.noise, "exponentiation", 0.1, 10.0).onChange(onNoiseChanged);
     noiseRollup.add(params.guiParams.noise, "height", 0, 20000).onChange(onNoiseChanged);
 
-    this._noise = new noise.Noise(params.guiParams.noise);
+    this._noise = new Noise(params.guiParams.noise);
     this._noiseParams = params.guiParams.noise;
 
     params.guiParams.heightmap = {
@@ -142,7 +142,7 @@ export default class TerrainChunkManager {
     noiseRollup.add(params.guiParams.biomes, "lacunarity", 0.01, 4.0).onChange(onNoiseChanged);
     noiseRollup.add(params.guiParams.biomes, "exponentiation", 0.1, 10.0).onChange(onNoiseChanged);
 
-    this._biomes = new noise.Noise(params.guiParams.biomes);
+    this._biomes = new Noise(params.guiParams.biomes);
     this._biomesParams = params.guiParams.biomes;
 
     const colourParams = {
@@ -155,7 +155,7 @@ export default class TerrainChunkManager {
       seed: 2,
       height: 1.0,
     };
-    this._colourNoise = new noise.Noise(colourParams);
+    this._colourNoise = new Noise(colourParams);
     this._colourNoiseParams = colourParams;
   }
 
@@ -228,7 +228,7 @@ export default class TerrainChunkManager {
       return c.position[0] + "/" + c.position[1] + " [" + c.size + "]" + " [" + c.index + "]";
     }
 
-    const q = new quadtree.CubeQuadTree({
+    const q = new CubeQuadTree({
       radius: _PLANET_RADIUS,
       min_node_size: _MIN_CELL_SIZE,
     });

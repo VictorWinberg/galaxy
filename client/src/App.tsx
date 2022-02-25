@@ -38,12 +38,12 @@ function App() {
     setCamera(camera);
 
     // Controls
-    // const controls = new FlyControls(camera, renderer.domElement);
-    // controls.movementSpeed = 10;
-    // controls.rollSpeed = Math.PI / 24;
-    // controls.autoForward = false;
-    // controls.dragToLook = false;
-    // setControls(controls);
+    const controls = new FlyControls(camera, renderer.domElement);
+    controls.movementSpeed = 1000;
+    controls.rollSpeed = Math.PI / 24;
+    controls.autoForward = false;
+    controls.dragToLook = false;
+    setControls(controls);
 
     // GUI
     const gui = new GUI();
@@ -71,12 +71,18 @@ function App() {
     return () => window.removeEventListener("resize", OnWindowResize);
   }, [camera, renderer]);
 
-  if (!renderer || !camera || !clock || !gui) return null;
+  if (!renderer || !camera || !controls || !clock || !gui) return null;
 
   return (
     <>
       <UI />
-      <Scene renderer={renderer} camera={camera} gui={gui} clock={clock} />
+      <Scene
+        renderer={renderer}
+        camera={camera}
+        controls={controls}
+        gui={gui}
+        clock={clock}
+      />
     </>
   );
 }

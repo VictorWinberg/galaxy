@@ -63,9 +63,6 @@ export const textures = (function() {
           diffuse.wrapT = THREE.RepeatWrapping;
           diffuse.generateMipmaps = true;
 
-          const caps = this._game._graphics._threejs.capabilities;
-          const aniso = caps.getMaxAnisotropy();
-
           diffuse.anisotropy = 4;
 
           atlas.atlas = diffuse;
