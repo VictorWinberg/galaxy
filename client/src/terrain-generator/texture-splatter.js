@@ -20,49 +20,49 @@ const sat = (x) => Math.min(Math.max(x, 0.0), 1.0);
 
 export class HeightGenerator {
   constructor(generator, position, minRadius, maxRadius) {
-    this._position = position.clone();
-    this._radius = [minRadius, maxRadius];
-    this._generator = generator;
+    this.position = position.clone();
+    this.radius = [minRadius, maxRadius];
+    this.generator = generator;
   }
 
   Get(x, y, z) {
-    return [this._generator.Get(x, y, z), 1];
+    return [this.generator.Get(x, y, z), 1];
   }
 }
 
 export class TextureSplatter {
   constructor(params) {
-    const _colourLerp = (t, p0, p1) => {
+    this.params = params;
+
+    const colourLerp = (t, p0, p1) => {
       const c = p0.clone();
 
       return c.lerp(p1, t);
     };
-    this._colourSpline = [new LinearSpline(_colourLerp), new LinearSpline(_colourLerp)];
+    this.colourSpline = [new LinearSpline(colourLerp), new LinearSpline(colourLerp)];
 
     // Arid
-    this._colourSpline[0].AddPoint(0.0, new THREE.Color(0xb7a67d));
-    this._colourSpline[0].AddPoint(0.5, new THREE.Color(0xf1e1bc));
-    this._colourSpline[0].AddPoint(1.0, SNOW);
+    this.colourSpline[0].AddPoint(0.0, new THREE.Color(0xb7a67d));
+    this.colourSpline[0].AddPoint(0.5, new THREE.Color(0xf1e1bc));
+    this.colourSpline[0].AddPoint(1.0, SNOW);
 
     // Humid
-    this._colourSpline[1].AddPoint(0.0, ApplyWeightsOREST_BOREAL);
-    this._colourSpline[1].AddPoint(0.5, new THREE.Color(0xcee59c));
-    this._colourSpline[1].AddPoint(1.0, SNOW);
+    this.colourSpline[1].AddPoint(0.0, ApplyWeightsOREST_BOREAL);
+    this.colourSpline[1].AddPoint(0.5, new THREE.Color(0xcee59c));
+    this.colourSpline[1].AddPoint(1.0, SNOW);
 
-    this._oceanSpline = new LinearSpline(_colourLerp);
-    this._oceanSpline.AddPoint(0, DEEP_OCEAN);
-    this._oceanSpline.AddPoint(0.03, SHALLOW_OCEAN);
-    this._oceanSpline.AddPoint(0.05, SHALLOW_OCEAN);
-
-    this._params = params;
+    this.oceanSpline = new LinearSpline(colourLerp);
+    this.oceanSpline.AddPoint(0, DEEP_OCEAN);
+    this.oceanSpline.AddPoint(0.03, SHALLOW_OCEAN);
+    this.oceanSpline.AddPoint(0.05, SHALLOW_OCEAN);
   }
 
-  _BaseColour(x, y, z) {
-    const m = this._params.biomeGenerator.Get(x, y, z);
+  BaseColour(x, y, z) {
+    const m = this.params.biomeGenerator.Get(x, y, z);
     const h = sat(z / 100.0);
 
-    const c1 = this._colourSpline[0].Get(h);
-    const c2 = this._colourSpline[1].Get(h);
+    const c1 = this.colourSpline[0].Get(h);
+    const c2 = this.colourSpline[1].Get(h);
 
     let c = c1.lerp(c2, m);
 
@@ -72,16 +72,16 @@ export class TextureSplatter {
     return c;
   }
 
-  _Colour(x, y, z) {
-    const c = this._BaseColour(x, y, z);
-    const r = this._params.colourNoise.Get(x, y, z) * 2.0 - 1.0;
+  Colour(x, y, z) {
+    const c = this.BaseColour(x, y, z);
+    const r = this.params.colourNoise.Get(x, y, z) * 2.0 - 1.0;
 
     c.offsetHSL(0.0, 0.0, r * 0.01);
     return c;
   }
 
-  _GetTextureWeights(p, n, up) {
-    const m = this._params.biomeGenerator.Get(p.x, p.y, p.z);
+  GetTextureWeights(p, n, up) {
+    const m = this.params.biomeGenerator.Get(p.x, p.y, p.z);
     const h = p.z / 100.0;
 
     const types = {
@@ -95,7 +95,7 @@ export class TextureSplatter {
       sandyrock: { index: 7, strength: 0.0 },
     };
 
-    function _ApplyWeights(dst, v, m) {
+    function ApplyWeights(dst, v, m) {
       for (let k in types) {
         types[k].strength *= m;
       }
@@ -103,52 +103,39 @@ export class TextureSplatter {
     }
 
     types.grass.strength = 1.0;
-    _ApplyWeights("gravel", 1.0 - m, m);
+    ApplyWeights("gravel", 1.0 - m, m);
 
     if (h < 0.2) {
       const s = 1.0 - sat((h - 0.1) / 0.05);
-      _ApplyWeights("cobble", s, 1.0 - s);
+      ApplyWeights("cobble", s, 1.0 - s);
 
       if (h < 0.1) {
         const s = 1.0 - sat((h - 0.05) / 0.05);
-        _ApplyWeights("sandyrock", s, 1.0 - s);
+        ApplyWeights("sandyrock", s, 1.0 - s);
       }
     } else {
       if (h > 0.125) {
         const s = sat((h - 0.125) / 1.25);
-        _ApplyWeights("rock", s, 1.0 - s);
+        ApplyWeights("rock", s, 1.0 - s);
       }
 
       if (h > 1.5) {
         const s = sat((h - 0.75) / 2.0);
-        _ApplyWeights("snow", s, 1.0 - s);
+        ApplyWeights("snow", s, 1.0 - s);
       }
     }
 
     // In case nothing gets set.
     types.dirt.strength = 0.01;
 
-    let total = 0.0;
-    for (let k in types) {
-      total += types[k].strength;
-    }
-    if (total < 0.01) {
-      const a = 0;
-    }
-    const normalization = 1.0 / total;
-
-    for (let k in types) {
-      // types[k].strength / normalization;
-    }
-
     return types;
   }
 
   GetColour(position) {
-    return this._Colour(position.x, position.y, position.z);
+    return this.Colour(position.x, position.y, position.z);
   }
 
   GetSplat(position, normal, up) {
-    return this._GetTextureWeights(position, normal, up);
+    return this.GetTextureWeights(position, normal, up);
   }
 }

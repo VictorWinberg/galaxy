@@ -3,8 +3,7 @@ import * as THREE from "three";
 import type { Mesh } from "three";
 import { FlyControls } from "three/examples/jsm/controls/FlyControls";
 import { generateNearbyChunks } from "./ChunkGenerator";
-import TerrainChunkManager from "./simondev/terrain";
-import { GUI } from "dat.gui";
+import TerrainChunkManager from "./terrain-generator/terrain";
 
 type Props = {
   renderer: THREE.WebGLRenderer;
@@ -24,12 +23,7 @@ function Scene({ renderer, camera, controls, gui, clock }: Props) {
     // Scene
     const scene = new THREE.Scene();
 
-    const terrain = new TerrainChunkManager({
-      camera: camera,
-      scene: scene,
-      gui: new GUI(),
-      guiParams: {},
-    });
+    const terrain = new TerrainChunkManager({ camera, scene, gui });
 
     // Background
     const loader = new THREE.CubeTextureLoader();
@@ -45,7 +39,7 @@ function Scene({ renderer, camera, controls, gui, clock }: Props) {
 
     // Lights
     const light = new THREE.DirectionalLight(0xffffff, 1.0);
-    light.position.set(20, 100, 10);
+    light.position.set(0, 100, 100000);
     light.target.position.set(0, 0, 0);
     light.castShadow = true;
     light.shadow.bias = -0.001;
@@ -97,8 +91,14 @@ function Scene({ renderer, camera, controls, gui, clock }: Props) {
       frameId.current = requestAnimationFrame(animate);
     };
     frameId.current = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(frameId.current);
-  }, [renderer, camera, clock]);
+
+    return () => {
+      cancelAnimationFrame(frameId.current);
+      gui.removeFolder(gui.__folders["Terrain"]);
+      gui.removeFolder(gui.__folders["Terrain.Noise"]);
+      gui.removeFolder(gui.__folders["Terrain.Biomes"]);
+    };
+  }, [renderer, camera, controls, gui, clock]);
 
   return (
     <div id="scene" ref={ref}>

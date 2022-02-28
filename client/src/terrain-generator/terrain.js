@@ -109,13 +109,6 @@ export default class TerrainChunkManager {
     noiseRollup.add(this.noiseParams, "height", 0, 20000).onChange(onNoiseChanged);
 
     this.noise = new Noise(this.noiseParams);
-
-    this.heightmapParams = {
-      height: 16,
-    };
-
-    const heightmapRollup = gui.addFolder("Terrain.Heightmap");
-    heightmapRollup.add(this.heightmapParams, "height", 0, 128).onChange(onNoiseChanged);
   }
 
   InitBiomes({ gui }) {
@@ -134,12 +127,12 @@ export default class TerrainChunkManager {
       this.builder.Rebuild(this.chunks);
     };
 
-    const noiseRollup = gui.addFolder("Terrain.Biomes");
-    noiseRollup.add(this.biomesParams, "scale", 64.0, 4096.0).onChange(onNoiseChanged);
-    noiseRollup.add(this.biomesParams, "octaves", 1, 20, 1).onChange(onNoiseChanged);
-    noiseRollup.add(this.biomesParams, "persistence", 0.01, 1.0).onChange(onNoiseChanged);
-    noiseRollup.add(this.biomesParams, "lacunarity", 0.01, 4.0).onChange(onNoiseChanged);
-    noiseRollup.add(this.biomesParams, "exponentiation", 0.1, 10.0).onChange(onNoiseChanged);
+    const biomesRollup = gui.addFolder("Terrain.Biomes");
+    biomesRollup.add(this.biomesParams, "scale", 64.0, 4096.0).onChange(onNoiseChanged);
+    biomesRollup.add(this.biomesParams, "octaves", 1, 20, 1).onChange(onNoiseChanged);
+    biomesRollup.add(this.biomesParams, "persistence", 0.01, 1.0).onChange(onNoiseChanged);
+    biomesRollup.add(this.biomesParams, "lacunarity", 0.01, 4.0).onChange(onNoiseChanged);
+    biomesRollup.add(this.biomesParams, "exponentiation", 0.1, 10.0).onChange(onNoiseChanged);
 
     this.biomes = new Noise(this.biomesParams);
 
