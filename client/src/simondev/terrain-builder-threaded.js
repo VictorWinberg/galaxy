@@ -79,7 +79,7 @@ export default class TerrainBuilderThreaded {
     this._params = params;
   }
 
-  _OnResult(chunk, msg) {
+  OnResult(chunk, msg) {
     if (msg.subject === "build_chunk_result") {
       chunk.RebuildMeshFromData(msg.data);
       chunk.Show();
@@ -93,15 +93,15 @@ export default class TerrainBuilderThreaded {
       this._pool[w] = [];
     }
 
-    let c = null;
+    let chunk = null;
     if (this._pool[w].length > 0) {
-      c = this._pool[w].pop();
-      c._params = params;
+      chunk = this._pool[w].pop();
+      chunk._params = params;
     } else {
-      c = new TerrainChunk(params);
+      chunk = new TerrainChunk(params);
     }
 
-    c.Hide();
+    chunk.Hide();
 
     const threadedParams = {
       noiseParams: params.noiseParams,
@@ -122,17 +122,45 @@ export default class TerrainBuilderThreaded {
     };
 
     this._workerPool.Enqueue(msg, (m) => {
-      this._OnResult(c, m);
+      this.OnResult(chunk, m);
     });
 
-    return c;
+    return chunk;
+  }
+
+  RebuildChunk(chunk) {
+    const params = chunk._params;
+
+    const threadedParams = {
+      noiseParams: params.noiseParams,
+      colourNoiseParams: params.colourNoiseParams,
+      biomesParams: params.biomesParams,
+      colourGeneratorParams: params.colourGeneratorParams,
+      heightGeneratorsParams: params.heightGeneratorsParams,
+      width: params.width,
+      offset: [params.offset.x, params.offset.y, params.offset.z],
+      radius: params.radius,
+      resolution: params.resolution,
+      worldMatrix: params.group.matrix,
+    };
+
+    const msg = {
+      subject: "build_chunk",
+      params: threadedParams,
+    };
+
+    this._workerPool.Enqueue(msg, (m) => {
+      this.OnResult(chunk, m);
+    });
+
+    return chunk;
   }
 
   RetireChunks(chunks) {
     this._old.push(...chunks);
   }
 
-  _RecycleChunks(chunks) {
+  RecycleChunks(chunks) {
     for (let c of chunks) {
       if (!(c.chunk._params.width in this._pool)) {
         this._pool[c.chunk._params.width] = [];
@@ -148,13 +176,13 @@ export default class TerrainBuilderThreaded {
 
   Rebuild(chunks) {
     for (let k in chunks) {
-      this._workerPool.Enqueue(chunks[k].chunk._params);
+      this.RebuildChunk(chunks[k].chunk);
     }
   }
 
   Update() {
     if (!this.Busy) {
-      this._RecycleChunks(this._old);
+      this.RecycleChunks(this._old);
       this._old = [];
     }
   }
