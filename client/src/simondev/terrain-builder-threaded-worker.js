@@ -1,15 +1,15 @@
 import * as THREE from "three";
 
 import { Noise } from "./noise.js";
-import { texture_splatter } from "./texture-splatter.js";
+import { HeightGenerator, TextureSplatter } from "./texture-splatter.js";
 
-class _TerrainBuilderThreadedWorker {
+class TerrainBuilderThreadedWorker {
   Init(params) {
     this._params = params;
     this._params.offset = new THREE.Vector3(params.offset[0], params.offset[1], params.offset[2]);
     this._params.noise = new Noise(params.noiseParams);
     this._params.heightGenerators = [
-      new texture_splatter.HeightGenerator(
+      new HeightGenerator(
         this._params.noise,
         params.offset,
         params.heightGeneratorsParams.min,
@@ -19,7 +19,7 @@ class _TerrainBuilderThreadedWorker {
 
     this._params.biomeGenerator = new Noise(params.biomesParams);
     this._params.colourNoise = new Noise(params.colourNoiseParams);
-    this._params.colourGenerator = new texture_splatter.TextureSplatter({
+    this._params.colourGenerator = new TextureSplatter({
       biomeGenerator: this._params.biomeGenerator,
       colourNoise: this._params.colourNoise,
     });
@@ -283,7 +283,7 @@ class _TerrainBuilderThreadedWorker {
   }
 }
 
-const _CHUNK = new _TerrainBuilderThreadedWorker();
+const _CHUNK = new TerrainBuilderThreadedWorker();
 
 // eslint-disable-next-line no-restricted-globals
 self.onmessage = (msg) => {

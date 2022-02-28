@@ -1,6 +1,4 @@
-export const terrain_shader = (function() {
-
-  const _VS = `#version 300 es
+export const VERTEX_SHADER = `#version 300 es
 
 precision highp float;
 
@@ -44,9 +42,8 @@ void main(){
   vWeights2 = weights2;
 }
   `;
-  
 
-  const _PS = `#version 300 es
+export const FRAGMENT_SHADER = `#version 300 es
 
 precision highp float;
 precision highp int;
@@ -309,10 +306,3 @@ void main() {
 }
 
   `;
-  
-    return {
-      VS: _VS,
-      PS: _PS,
-    };
-  })();
-  

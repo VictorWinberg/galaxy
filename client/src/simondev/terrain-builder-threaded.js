@@ -1,15 +1,13 @@
 import Worker from "web-worker";
 
-import { terrain_chunk } from "./terrain-chunk.js";
+import TerrainChunk from "./terrain-chunk.js";
 
-const _NUM_WORKERS = 7;
+const _NUM_WORKERS = 4;
 
 let _IDs = 0;
 
 class WorkerThread {
   constructor(s) {
-    // this._worker = new Worker(s, { type: "module" });
-    // this._worker = new WorkerBuilder(Worker)
     this._worker = new Worker(new URL("./terrain-builder-threaded-worker.js", import.meta.url), { type: "module" });
     this._worker.onmessage = (e) => {
       this._OnMessage(e);
@@ -72,7 +70,7 @@ class WorkerThreadPool {
   }
 }
 
-export default class TerrainChunkRebuilderThreaded {
+export default class TerrainBuilderThreaded {
   constructor(params) {
     this._pool = {};
     this._old = [];
@@ -100,7 +98,7 @@ export default class TerrainChunkRebuilderThreaded {
       c = this._pool[w].pop();
       c._params = params;
     } else {
-      c = new terrain_chunk.TerrainChunk(params);
+      c = new TerrainChunk(params);
     }
 
     c.Hide();

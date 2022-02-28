@@ -2,23 +2,23 @@ import * as THREE from "three";
 
 import { Noise } from "./noise.js";
 import { CubeQuadTree } from "./quadtree.js";
-import { terrain_shader } from "./terrain-shader.js";
-import TerrainChunkRebuilderThreaded from "./terrain-builder-threaded.js";
-import { texture_splatter } from "./texture-splatter.js";
-import { textures } from "./textures.js";
-import { utils } from "./utils.js";
+import { VERTEX_SHADER, FRAGMENT_SHADER } from "./terrain-shader.js";
+import TerrainBuilderThreaded from "./terrain-builder-threaded.js";
+import { TextureSplatter, HeightGenerator } from "./texture-splatter.js";
+import { TextureAtlas } from "./textures.js";
+import { DictDifference, DictIntersection } from "./utils.js";
 
-const _MIN_CELL_SIZE = 250;
-const _MIN_CELL_RESOLUTION = 64;
-const _PLANET_RADIUS = 4000;
+const MIN_CELL_SIZE = 250;
+const MIN_CELL_RESOLUTION = 64;
+const PLANET_RADIUS = 4000;
 
 export default class TerrainChunkManager {
   constructor(params) {
-    this._Init(params);
+    this.Init(params);
   }
 
-  _Init(params) {
-    this._params = params;
+  Init({ camera, scene, gui }) {
+    this.camera = camera;
 
     const loader = new THREE.TextureLoader();
 
@@ -26,7 +26,7 @@ export default class TerrainChunkManager {
     noiseTexture.wrapS = THREE.RepeatWrapping;
     noiseTexture.wrapT = THREE.RepeatWrapping;
 
-    const diffuse = new textures.TextureAtlas(params);
+    const diffuse = new TextureAtlas();
     diffuse.Load("diffuse", [
       "/galaxy/resources/dirt_01_diffuse-1024.png",
       "/galaxy/resources/grass1-albedo3-1024.png",
@@ -38,10 +38,10 @@ export default class TerrainChunkManager {
       "/galaxy/resources/sandy-rocks1-albedo-1024.png",
     ]);
     diffuse.onLoad = () => {
-      this._material.uniforms.diffuseMap.value = diffuse.Info["diffuse"].atlas;
+      this.material.uniforms.diffuseMap.value = diffuse.Info["diffuse"].atlas;
     };
 
-    const normal = new textures.TextureAtlas(params);
+    const normal = new TextureAtlas();
     normal.Load("normal", [
       "/galaxy/resources/dirt_01_normal-1024.jpg",
       "/galaxy/resources/grass1-normal-1024.jpg",
@@ -53,10 +53,10 @@ export default class TerrainChunkManager {
       "/galaxy/resources/sandy-rocks1-normal-1024.jpg",
     ]);
     normal.onLoad = () => {
-      this._material.uniforms.normalMap.value = normal.Info["normal"].atlas;
+      this.material.uniforms.normalMap.value = normal.Info["normal"].atlas;
     };
 
-    this._material = new THREE.MeshStandardMaterial({
+    this.material = new THREE.MeshStandardMaterial({
       wireframe: false,
       wireframeLinewidth: 1,
       color: 0xffffff,
@@ -65,7 +65,7 @@ export default class TerrainChunkManager {
       // normalMap: texture,
     });
 
-    this._material = new THREE.RawShaderMaterial({
+    this.material = new THREE.RawShaderMaterial({
       uniforms: {
         diffuseMap: {},
         normalMap: {},
@@ -73,20 +73,20 @@ export default class TerrainChunkManager {
           value: noiseTexture,
         },
       },
-      vertexShader: terrain_shader.VS,
-      fragmentShader: terrain_shader.PS,
+      vertexShader: VERTEX_SHADER,
+      fragmentShader: FRAGMENT_SHADER,
       side: THREE.FrontSide,
     });
 
-    this._builder = new TerrainChunkRebuilderThreaded();
+    this.builder = new TerrainBuilderThreaded();
 
-    this._InitNoise(params);
-    this._InitBiomes(params);
-    this._InitTerrain(params);
+    this.InitNoise({ gui });
+    this.InitBiomes({ gui });
+    this.InitTerrain({ scene, gui });
   }
 
-  _InitNoise(params) {
-    params.guiParams.noise = {
+  InitNoise({ gui }) {
+    this.noiseParams = {
       octaves: 10,
       persistence: 0.5,
       lacunarity: 1.6,
@@ -97,30 +97,29 @@ export default class TerrainChunkManager {
     };
 
     const onNoiseChanged = () => {
-      this._builder.Rebuild(this._chunks);
+      this.builder.Rebuild(this.chunks);
     };
 
-    const noiseRollup = params.gui.addFolder("Terrain.Noise");
-    noiseRollup.add(params.guiParams.noise, "scale", 32.0, 4096.0).onChange(onNoiseChanged);
-    noiseRollup.add(params.guiParams.noise, "octaves", 1, 20, 1).onChange(onNoiseChanged);
-    noiseRollup.add(params.guiParams.noise, "persistence", 0.25, 1.0).onChange(onNoiseChanged);
-    noiseRollup.add(params.guiParams.noise, "lacunarity", 0.01, 4.0).onChange(onNoiseChanged);
-    noiseRollup.add(params.guiParams.noise, "exponentiation", 0.1, 10.0).onChange(onNoiseChanged);
-    noiseRollup.add(params.guiParams.noise, "height", 0, 20000).onChange(onNoiseChanged);
+    const noiseRollup = gui.addFolder("Terrain.Noise");
+    noiseRollup.add(this.noiseParams, "scale", 32.0, 4096.0).onChange(onNoiseChanged);
+    noiseRollup.add(this.noiseParams, "octaves", 1, 20, 1).onChange(onNoiseChanged);
+    noiseRollup.add(this.noiseParams, "persistence", 0.25, 1.0).onChange(onNoiseChanged);
+    noiseRollup.add(this.noiseParams, "lacunarity", 0.01, 4.0).onChange(onNoiseChanged);
+    noiseRollup.add(this.noiseParams, "exponentiation", 0.1, 10.0).onChange(onNoiseChanged);
+    noiseRollup.add(this.noiseParams, "height", 0, 20000).onChange(onNoiseChanged);
 
-    this._noise = new Noise(params.guiParams.noise);
-    this._noiseParams = params.guiParams.noise;
+    this.noise = new Noise(this.noiseParams);
 
-    params.guiParams.heightmap = {
+    this.heightmapParams = {
       height: 16,
     };
 
-    const heightmapRollup = params.gui.addFolder("Terrain.Heightmap");
-    heightmapRollup.add(params.guiParams.heightmap, "height", 0, 128).onChange(onNoiseChanged);
+    const heightmapRollup = gui.addFolder("Terrain.Heightmap");
+    heightmapRollup.add(this.heightmapParams, "height", 0, 128).onChange(onNoiseChanged);
   }
 
-  _InitBiomes(params) {
-    params.guiParams.biomes = {
+  InitBiomes({ gui }) {
+    this.biomesParams = {
       octaves: 2,
       persistence: 0.5,
       lacunarity: 2.0,
@@ -132,20 +131,19 @@ export default class TerrainChunkManager {
     };
 
     const onNoiseChanged = () => {
-      this._builder.Rebuild(this._chunks);
+      this.builder.Rebuild(this.chunks);
     };
 
-    const noiseRollup = params.gui.addFolder("Terrain.Biomes");
-    noiseRollup.add(params.guiParams.biomes, "scale", 64.0, 4096.0).onChange(onNoiseChanged);
-    noiseRollup.add(params.guiParams.biomes, "octaves", 1, 20, 1).onChange(onNoiseChanged);
-    noiseRollup.add(params.guiParams.biomes, "persistence", 0.01, 1.0).onChange(onNoiseChanged);
-    noiseRollup.add(params.guiParams.biomes, "lacunarity", 0.01, 4.0).onChange(onNoiseChanged);
-    noiseRollup.add(params.guiParams.biomes, "exponentiation", 0.1, 10.0).onChange(onNoiseChanged);
+    const noiseRollup = gui.addFolder("Terrain.Biomes");
+    noiseRollup.add(this.biomesParams, "scale", 64.0, 4096.0).onChange(onNoiseChanged);
+    noiseRollup.add(this.biomesParams, "octaves", 1, 20, 1).onChange(onNoiseChanged);
+    noiseRollup.add(this.biomesParams, "persistence", 0.01, 1.0).onChange(onNoiseChanged);
+    noiseRollup.add(this.biomesParams, "lacunarity", 0.01, 4.0).onChange(onNoiseChanged);
+    noiseRollup.add(this.biomesParams, "exponentiation", 0.1, 10.0).onChange(onNoiseChanged);
 
-    this._biomes = new Noise(params.guiParams.biomes);
-    this._biomesParams = params.guiParams.biomes;
+    this.biomes = new Noise(this.biomesParams);
 
-    const colourParams = {
+    this.colourNoiseParams = {
       octaves: 1,
       persistence: 0.5,
       lacunarity: 2.0,
@@ -155,57 +153,55 @@ export default class TerrainChunkManager {
       seed: 2,
       height: 1.0,
     };
-    this._colourNoise = new Noise(colourParams);
-    this._colourNoiseParams = colourParams;
+    this.colourNoise = new Noise(this.colourNoiseParams);
   }
 
-  _InitTerrain(params) {
-    params.guiParams.terrain = {
+  InitTerrain({ scene, gui }) {
+    this.terrainParams = {
       wireframe: false,
     };
 
-    this._groups = [...new Array(6)].map((_) => new THREE.Group());
-    params.scene.add(...this._groups);
+    this.groups = [...new Array(6)].map((_) => new THREE.Group());
+    scene.add(...this.groups);
 
-    const terrainRollup = params.gui.addFolder("Terrain");
-    terrainRollup.add(params.guiParams.terrain, "wireframe").onChange(() => {
-      for (let k in this._chunks) {
-        this._chunks[k].chunk._plane.material.wireframe = params.guiParams.terrain.wireframe;
+    const terrainRollup = gui.addFolder("Terrain");
+    terrainRollup.add(this.terrainParams, "wireframe").onChange(() => {
+      for (let k in this.chunks) {
+        this.chunks[k].chunk._plane.material.wireframe = this.terrainParams.wireframe;
       }
     });
 
-    this._chunks = {};
-    this._params = params;
+    this.chunks = {};
   }
 
-  _CellIndex(p) {
-    const xp = p.x + _MIN_CELL_SIZE * 0.5;
-    const yp = p.z + _MIN_CELL_SIZE * 0.5;
-    const x = Math.floor(xp / _MIN_CELL_SIZE);
-    const z = Math.floor(yp / _MIN_CELL_SIZE);
+  CellIndex(p) {
+    const xp = p.x + MIN_CELL_SIZE * 0.5;
+    const yp = p.z + MIN_CELL_SIZE * 0.5;
+    const x = Math.floor(xp / MIN_CELL_SIZE);
+    const z = Math.floor(yp / MIN_CELL_SIZE);
     return [x, z];
   }
 
-  _CreateTerrainChunk(group, offset, width, resolution) {
+  CreateTerrainChunk(group, offset, width, resolution) {
     const params = {
       group: group,
-      material: this._material,
+      material: this.material,
       width: width,
       offset: offset,
-      radius: _PLANET_RADIUS,
+      radius: PLANET_RADIUS,
       resolution: resolution,
-      biomeGenerator: this._biomes,
-      colourGenerator: new texture_splatter.TextureSplatter({
-        biomeGenerator: this._biomes,
-        colourNoise: this._colourNoise,
+      biomeGenerator: this.biomes,
+      colourGenerator: new TextureSplatter({
+        biomeGenerator: this.biomes,
+        colourNoise: this.colourNoise,
       }),
-      heightGenerators: [new texture_splatter.HeightGenerator(this._noise, offset, 100000, 100000 + 1)],
-      noiseParams: this._noiseParams,
-      colourNoiseParams: this._colourNoiseParams,
-      biomesParams: this._biomesParams,
+      heightGenerators: [new HeightGenerator(this.noise, offset, 100000, 100000 + 1)],
+      noiseParams: this.noiseParams,
+      colourNoiseParams: this.colourNoiseParams,
+      biomesParams: this.biomesParams,
       colourGeneratorParams: {
-        biomeGeneratorParams: this._biomesParams,
-        colourNoiseParams: this._colourNoiseParams,
+        biomeGeneratorParams: this.biomesParams,
+        colourNoiseParams: this.colourNoiseParams,
       },
       heightGeneratorsParams: {
         min: 100000,
@@ -213,26 +209,26 @@ export default class TerrainChunkManager {
       },
     };
 
-    return this._builder.AllocateChunk(params);
+    return this.builder.AllocateChunk(params);
   }
 
-  Update(_) {
-    this._builder.Update();
-    if (!this._builder.Busy) {
-      this._UpdateVisibleChunks_Quadtree();
+  Update() {
+    this.builder.Update();
+    if (!this.builder.Busy) {
+      this.UpdateVisibleChunks_Quadtree();
     }
   }
 
-  _UpdateVisibleChunks_Quadtree() {
-    function _Key(c) {
-      return c.position[0] + "/" + c.position[1] + " [" + c.size + "]" + " [" + c.index + "]";
+  UpdateVisibleChunks_Quadtree() {
+    function Key(c) {
+      return c.position[0] + "/" + c.position[1] + " [" + c.size + "] [" + c.index + "]";
     }
 
     const q = new CubeQuadTree({
-      radius: _PLANET_RADIUS,
-      min_node_size: _MIN_CELL_SIZE,
+      radius: PLANET_RADIUS,
+      min_node_size: MIN_CELL_SIZE,
     });
-    q.Insert(this._params.camera.position);
+    q.Insert(this.camera.position);
 
     const sides = q.GetChildren();
 
@@ -240,30 +236,30 @@ export default class TerrainChunkManager {
     const center = new THREE.Vector3();
     const dimensions = new THREE.Vector3();
     for (let i = 0; i < sides.length; i++) {
-      this._groups[i].matrix = sides[i].transform;
-      this._groups[i].matrixAutoUpdate = false;
+      this.groups[i].matrix = sides[i].transform;
+      this.groups[i].matrixAutoUpdate = false;
       for (let c of sides[i].children) {
         c.bounds.getCenter(center);
         c.bounds.getSize(dimensions);
 
         const child = {
           index: i,
-          group: this._groups[i],
+          group: this.groups[i],
           position: [center.x, center.y, center.z],
           bounds: c.bounds,
           size: dimensions.x,
         };
 
-        const k = _Key(child);
+        const k = Key(child);
         newTerrainChunks[k] = child;
       }
     }
 
-    const intersection = utils.DictIntersection(this._chunks, newTerrainChunks);
-    const difference = utils.DictDifference(newTerrainChunks, this._chunks);
-    const recycle = Object.values(utils.DictDifference(this._chunks, newTerrainChunks));
+    const intersection = DictIntersection(this.chunks, newTerrainChunks);
+    const difference = DictDifference(newTerrainChunks, this.chunks);
+    const recycle = Object.values(DictDifference(this.chunks, newTerrainChunks));
 
-    this._builder.RetireChunks(recycle);
+    this.builder.RetireChunks(recycle);
 
     newTerrainChunks = intersection;
 
@@ -273,10 +269,10 @@ export default class TerrainChunkManager {
       const offset = new THREE.Vector3(xp, yp, zp);
       newTerrainChunks[k] = {
         position: [xp, zp],
-        chunk: this._CreateTerrainChunk(difference[k].group, offset, difference[k].size, _MIN_CELL_RESOLUTION),
+        chunk: this.CreateTerrainChunk(difference[k].group, offset, difference[k].size, MIN_CELL_RESOLUTION),
       };
     }
 
-    this._chunks = newTerrainChunks;
+    this.chunks = newTerrainChunks;
   }
 }

@@ -35,6 +35,7 @@ function App() {
     const far = 100000.0;
     const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
     camera.position.set(0, 0, 10000);
+    // camera.quaternion.set(0, 0, 0, 0);
     setCamera(camera);
 
     // Controls
@@ -42,7 +43,7 @@ function App() {
     controls.movementSpeed = 1000;
     controls.rollSpeed = Math.PI / 24;
     controls.autoForward = false;
-    controls.dragToLook = false;
+    controls.dragToLook = true;
     setControls(controls);
 
     // GUI

@@ -3,7 +3,8 @@ import * as THREE from "three";
 import type { Mesh } from "three";
 import { FlyControls } from "three/examples/jsm/controls/FlyControls";
 import { generateNearbyChunks } from "./ChunkGenerator";
-import ProceduralTerrain from "./simondev/main.js";
+import TerrainChunkManager from "./simondev/terrain";
+import { GUI } from "dat.gui";
 
 type Props = {
   renderer: THREE.WebGLRenderer;
@@ -23,7 +24,12 @@ function Scene({ renderer, camera, controls, gui, clock }: Props) {
     // Scene
     const scene = new THREE.Scene();
 
-    const game = new ProceduralTerrain({ renderer, camera, gui, clock, scene });
+    const terrain = new TerrainChunkManager({
+      camera: camera,
+      scene: scene,
+      gui: new GUI(),
+      guiParams: {},
+    });
 
     // Background
     const loader = new THREE.CubeTextureLoader();
@@ -87,7 +93,7 @@ function Scene({ renderer, camera, controls, gui, clock }: Props) {
 
       controls.update(clock.getDelta());
       renderer.render(scene, camera);
-      game._terrain?.Update();
+      terrain.Update();
       frameId.current = requestAnimationFrame(animate);
     };
     frameId.current = requestAnimationFrame(animate);
