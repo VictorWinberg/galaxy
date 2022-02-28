@@ -1,8 +1,8 @@
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
-import type { Mesh } from "three";
+// import type { Mesh } from "three";
 import { FlyControls } from "three/examples/jsm/controls/FlyControls";
-import { generateNearbyChunks } from "./ChunkGenerator";
+// import { generateNearbyChunks } from "./ChunkGenerator";
 import TerrainChunkManager from "./terrain-generator/terrain";
 
 type Props = {

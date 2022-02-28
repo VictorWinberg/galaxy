@@ -49,9 +49,9 @@ function App() {
     // GUI
     const gui = new GUI();
     const cameraFolder = gui.addFolder("Camera");
-    cameraFolder.add(camera.position, "x", -10000000, 10000000);
-    cameraFolder.add(camera.position, "y", -10000000, 10000000);
-    cameraFolder.add(camera.position, "z", -10000000, 10000000);
+    cameraFolder.add(camera.position, "x", -1000000, 1000000);
+    cameraFolder.add(camera.position, "y", -1000000, 1000000);
+    cameraFolder.add(camera.position, "z", -1000000, 1000000);
     cameraFolder.open();
     setGUI(gui);
 

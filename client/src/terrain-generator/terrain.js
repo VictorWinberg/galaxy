@@ -106,7 +106,7 @@ export default class TerrainChunkManager {
     noiseRollup.add(this.noiseParams, "persistence", 0.25, 1.0).onChange(onNoiseChanged);
     noiseRollup.add(this.noiseParams, "lacunarity", 0.01, 4.0).onChange(onNoiseChanged);
     noiseRollup.add(this.noiseParams, "exponentiation", 0.1, 10.0).onChange(onNoiseChanged);
-    noiseRollup.add(this.noiseParams, "height", 0, 20000).onChange(onNoiseChanged);
+    noiseRollup.add(this.noiseParams, "height", 0, 10000).onChange(onNoiseChanged);
 
     this.noise = new Noise(this.noiseParams);
   }

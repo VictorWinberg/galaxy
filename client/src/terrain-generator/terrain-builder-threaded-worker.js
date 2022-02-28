@@ -36,7 +36,6 @@ class TerrainBuilderThreadedWorker {
     const _P = new THREE.Vector3();
     const _H = new THREE.Vector3();
     const _W = new THREE.Vector3();
-    const _C = new THREE.Vector3();
     const _S = new THREE.Vector3();
 
     const _N = new THREE.Vector3();
@@ -177,10 +176,6 @@ class TerrainBuilderThreadedWorker {
         }
         return 0;
       });
-
-      const w1 = indices[i] * 4;
-      const w2 = indices[i + 1] * 4;
-      const w3 = indices[i + 2] * 4;
 
       for (let s = 0; s < 3; s++) {
         let total =

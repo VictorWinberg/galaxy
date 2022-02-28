@@ -27,7 +27,7 @@ class QuadTree {
   }
 
   _GetChildren(node, target) {
-    if (node.children.length == 0) {
+    if (node.children.length === 0) {
       target.push(node);
       return;
     }
@@ -146,7 +146,7 @@ export class CubeQuadTree {
     for (let t of transforms) {
       this._sides.push({
         transform: t.clone(),
-        worldToLocal: t.clone().getInverse(t),
+        worldToLocal: t.clone().invert(t),
         quadtree: new QuadTree({
           size: r,
           min_node_size: params.min_node_size,

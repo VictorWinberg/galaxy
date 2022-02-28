@@ -2,19 +2,19 @@ import * as THREE from "three";
 
 import { LinearSpline } from "./spline.js";
 
-const WHITE = new THREE.Color(0x808080);
+// const WHITE = new THREE.Color(0x808080);
 
 const DEEP_OCEAN = new THREE.Color(0x20020ff);
 const SHALLOW_OCEAN = new THREE.Color(0x8080ff);
-const BEACH = new THREE.Color(0xd9d592);
+// const BEACH = new THREE.Color(0xd9d592);
 const SNOW = new THREE.Color(0xffffff);
-const ApplyWeightsOREST_TROPICAL = new THREE.Color(0x4f9f0f);
-const ApplyWeightsOREST_TEMPERATE = new THREE.Color(0x2b960e);
+// const ApplyWeightsOREST_TROPICAL = new THREE.Color(0x4f9f0f);
+// const ApplyWeightsOREST_TEMPERATE = new THREE.Color(0x2b960e);
 const ApplyWeightsOREST_BOREAL = new THREE.Color(0x29c100);
 
-const GREEN = new THREE.Color(0x80ff80);
-const RED = new THREE.Color(0xff8080);
-const BLACK = new THREE.Color(0x000000);
+// const GREEN = new THREE.Color(0x80ff80);
+// const RED = new THREE.Color(0xff8080);
+// const BLACK = new THREE.Color(0x000000);
 
 const sat = (x) => Math.min(Math.max(x, 0.0), 1.0);
 
