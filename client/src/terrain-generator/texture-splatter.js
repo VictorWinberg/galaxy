@@ -8,15 +8,16 @@ const DEEP_OCEAN = new THREE.Color(0x20020ff);
 const SHALLOW_OCEAN = new THREE.Color(0x8080ff);
 // const BEACH = new THREE.Color(0xd9d592);
 const SNOW = new THREE.Color(0xffffff);
-// const ApplyWeightsOREST_TROPICAL = new THREE.Color(0x4f9f0f);
-// const ApplyWeightsOREST_TEMPERATE = new THREE.Color(0x2b960e);
-const ApplyWeightsOREST_BOREAL = new THREE.Color(0x29c100);
+// const OREST_TROPICAL = new THREE.Color(0x4f9f0f);
+// const OREST_TEMPERATE = new THREE.Color(0x2b960e);
+// const OREST_BOREAL = new THREE.Color(0x29c100);
 
 // const GREEN = new THREE.Color(0x80ff80);
 // const RED = new THREE.Color(0xff8080);
 // const BLACK = new THREE.Color(0x000000);
 
 const sat = (x) => Math.min(Math.max(x, 0.0), 1.0);
+const parametic = (x, a) => Math.pow(x, a) / (Math.pow(x, a) + Math.pow(1- x, a))
 
 export class HeightGenerator {
   constructor(generator, position, minRadius, maxRadius) {
@@ -42,32 +43,34 @@ export class TextureSplatter {
     this.colourSpline = [new LinearSpline(colourLerp), new LinearSpline(colourLerp)];
 
     // Arid
-    this.colourSpline[0].AddPoint(0.0, new THREE.Color(0xb7a67d));
-    this.colourSpline[0].AddPoint(0.5, new THREE.Color(0xf1e1bc));
-    this.colourSpline[0].AddPoint(1.0, SNOW);
+    this.colourSpline[0].AddPoint(0.0, new THREE.Color(0x7209b7));
+    this.colourSpline[0].AddPoint(0.5, new THREE.Color(0xb5179e));
+    this.colourSpline[0].AddPoint(1.0, new THREE.Color(0xf72585));
 
     // Humid
-    this.colourSpline[1].AddPoint(0.0, ApplyWeightsOREST_BOREAL);
-    this.colourSpline[1].AddPoint(0.5, new THREE.Color(0xcee59c));
+    this.colourSpline[1].AddPoint(0.0, new THREE.Color(0x6b705c));
+    this.colourSpline[1].AddPoint(0.5, new THREE.Color(0xa5a58d));
     this.colourSpline[1].AddPoint(1.0, SNOW);
 
     this.oceanSpline = new LinearSpline(colourLerp);
     this.oceanSpline.AddPoint(0, DEEP_OCEAN);
-    this.oceanSpline.AddPoint(0.03, SHALLOW_OCEAN);
     this.oceanSpline.AddPoint(0.05, SHALLOW_OCEAN);
   }
 
   BaseColour(x, y, z) {
     const m = this.params.biomeGenerator.Get(x, y, z);
-    const h = sat(z / 100.0);
+    const a = 8;
+
+    const h = sat(z / 50.0);
 
     const c1 = this.colourSpline[0].Get(h);
     const c2 = this.colourSpline[1].Get(h);
+    const ocean = this.oceanSpline.Get(h)
+    
+    let c = c1.lerp(c2, parametic(m, a));
 
-    let c = c1.lerp(c2, m);
-
-    if (h < 0.1) {
-      c = c.lerp(new THREE.Color(0x54380e), 1.0 - sat(h / 0.05));
+    if (h < 0.05) {
+      c = c.lerp(ocean, parametic(1.0 - h / 0.05, 3));
     }
     return c;
   }

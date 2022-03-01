@@ -32,7 +32,7 @@ function App() {
     const fov = 60;
     const aspect = window.innerWidth / window.innerHeight;
     const near = 0.1;
-    const far = 10000000.0;
+    const far = 100000.0;
     const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
     camera.position.set(0, 0, 10000);
     // camera.quaternion.set(0, 0, 0, 0);
@@ -41,7 +41,7 @@ function App() {
     // Controls
     const controls = new FlyControls(camera, renderer.domElement);
     controls.movementSpeed = 1000;
-    controls.rollSpeed = (10 * Math.PI) / 24;
+    controls.rollSpeed = Math.PI / 24;
     controls.autoForward = false;
     controls.dragToLook = true;
     setControls(controls);
@@ -52,7 +52,6 @@ function App() {
     cameraFolder.add(camera.position, "x", -1000000, 1000000);
     cameraFolder.add(camera.position, "y", -1000000, 1000000);
     cameraFolder.add(camera.position, "z", -1000000, 1000000);
-    cameraFolder.open();
     setGUI(gui);
 
     const clock = new THREE.Clock();

@@ -2,14 +2,12 @@ import * as THREE from "three";
 
 import { Noise } from "./noise.js";
 import { CubeQuadTree } from "./quadtree.js";
-import { VERTEX_SHADER, FRAGMENT_SHADER } from "./terrain-shader.js";
 import TerrainBuilderThreaded from "./terrain-builder-threaded.js";
 import { TextureSplatter, HeightGenerator } from "./texture-splatter.js";
-import { TextureAtlas } from "./textures.js";
 import { DictDifference, DictIntersection } from "./utils.js";
 
 const MIN_CELL_SIZE = 250;
-const MIN_CELL_RESOLUTION = 64;
+const MIN_CELL_RESOLUTION =256;
 const PLANET_RADIUS = 4000;
 
 export default class TerrainChunkManager {
@@ -20,42 +18,6 @@ export default class TerrainChunkManager {
   Init({ camera, scene, gui }) {
     this.camera = camera;
 
-    const loader = new THREE.TextureLoader();
-
-    const noiseTexture = loader.load("/galaxy/resources/simplex-noise.png");
-    noiseTexture.wrapS = THREE.RepeatWrapping;
-    noiseTexture.wrapT = THREE.RepeatWrapping;
-
-    const diffuse = new TextureAtlas();
-    diffuse.Load("diffuse", [
-      "/galaxy/resources/dirt_01_diffuse-1024.png",
-      "/galaxy/resources/grass1-albedo3-1024.png",
-      "/galaxy/resources/sandyground-albedo-1024.png",
-      "/galaxy/resources/worn-bumpy-rock-albedo-1024.png",
-      "/galaxy/resources/rock-snow-ice-albedo-1024.png",
-      "/galaxy/resources/snow-packed-albedo-1024.png",
-      "/galaxy/resources/rough-wet-cobble-albedo-1024.png",
-      "/galaxy/resources/sandy-rocks1-albedo-1024.png",
-    ]);
-    diffuse.onLoad = () => {
-      this.material.uniforms.diffuseMap.value = diffuse.Info["diffuse"].atlas;
-    };
-
-    const normal = new TextureAtlas();
-    normal.Load("normal", [
-      "/galaxy/resources/dirt_01_normal-1024.jpg",
-      "/galaxy/resources/grass1-normal-1024.jpg",
-      "/galaxy/resources/sandyground-normal-1024.jpg",
-      "/galaxy/resources/worn-bumpy-rock-normal-1024.jpg",
-      "/galaxy/resources/rock-snow-ice-normal-1024.jpg",
-      "/galaxy/resources/snow-packed-normal-1024.jpg",
-      "/galaxy/resources/rough-wet-cobble-normal-1024.jpg",
-      "/galaxy/resources/sandy-rocks1-normal-1024.jpg",
-    ]);
-    normal.onLoad = () => {
-      this.material.uniforms.normalMap.value = normal.Info["normal"].atlas;
-    };
-
     this.material = new THREE.MeshStandardMaterial({
       wireframe: false,
       wireframeLinewidth: 1,
@@ -63,19 +25,6 @@ export default class TerrainChunkManager {
       side: THREE.FrontSide,
       vertexColors: THREE.VertexColors,
       // normalMap: texture,
-    });
-
-    this.material = new THREE.RawShaderMaterial({
-      uniforms: {
-        diffuseMap: {},
-        normalMap: {},
-        noiseMap: {
-          value: noiseTexture,
-        },
-      },
-      vertexShader: VERTEX_SHADER,
-      fragmentShader: FRAGMENT_SHADER,
-      side: THREE.FrontSide,
     });
 
     this.builder = new TerrainBuilderThreaded();
@@ -91,7 +40,7 @@ export default class TerrainChunkManager {
       persistence: 0.5,
       lacunarity: 1.6,
       exponentiation: 7.5,
-      height: 900.0,
+      height: 2000.0,
       scale: 1800.0,
       seed: 1,
     };
