@@ -1,11 +1,10 @@
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { FlyControls } from "three/examples/jsm/controls/FlyControls";
+import { Text } from "troika-three-text";
 import { generateNearbyChunks } from "./ChunkGenerator";
 import type { Mesh } from "three";
 import { randomizeName } from "./utils";
-// @ts-ignore
-import { Text } from "troika-three-text";
 
 type Props = {
   renderer: THREE.WebGLRenderer;
