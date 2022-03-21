@@ -65,9 +65,10 @@ function App() {
     return () => window.removeEventListener("resize", OnWindowResize);
   }, [camera, renderer]);
 
-  if (!renderer || !camera || !controls || !clock) return null;
+  if (!renderer || !camera || !controls || !clock || !fontsLoaded)
+    return <div>LOADING</div>;
 
-  return fontsLoaded ? (
+  return (
     <>
       <UI />
       <Scene
@@ -77,8 +78,6 @@ function App() {
         clock={clock}
       />
     </>
-  ) : (
-    <div>LOADING</div>
   );
 }
 
