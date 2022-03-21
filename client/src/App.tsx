@@ -5,11 +5,14 @@ import UI from "./UI";
 import Scene from "./Scene";
 // @ts-ignore
 import { preloadFont } from "troika-three-text";
+import QueryParams from "./QueryParams";
 
 function App() {
   const [renderer, setRenderer] = useState<THREE.WebGLRenderer>();
   const [camera, setCamera] = useState<THREE.PerspectiveCamera>();
   const [controls, setControls] = useState<FlyControls>();
+  const [position, setPosition] =
+    useState<{ x: number; y: number; z: number }>();
   const [clock, setClock] = useState<THREE.Clock>();
   const [fontsLoaded, setFontsLoaded] = useState<boolean>(false);
   preloadFont(
@@ -36,7 +39,11 @@ function App() {
     const near = 1.0;
     const far = 1000;
     const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
-    camera.position.set(0, 2, 5);
+    // TODO: Use qs lib for this
+    const pos = (window.location.search.slice(1) || "0,2,5")
+      .split(",")
+      .map(Number);
+    camera.position.set(pos[0], pos[1], pos[2]);
     setCamera(camera);
 
     // Controls
@@ -44,7 +51,15 @@ function App() {
     controls.movementSpeed = 10;
     controls.rollSpeed = Math.PI / 24;
     controls.autoForward = false;
-    controls.dragToLook = false;
+    controls.dragToLook = true;
+
+    // Position
+    const { x, y, z } = camera.position;
+    setPosition({ x, y, z });
+    controls.addEventListener("change", () => {
+      const { x, y, z } = camera.position;
+      setPosition({ x, y, z });
+    });
 
     const clock = new THREE.Clock();
 
@@ -65,11 +80,13 @@ function App() {
     return () => window.removeEventListener("resize", OnWindowResize);
   }, [camera, renderer]);
 
-  if (!renderer || !camera || !controls || !clock || !fontsLoaded)
+  if (!renderer || !camera || !controls || !clock || !position || !fontsLoaded) {
     return <div>LOADING</div>;
+  }
 
   return (
     <>
+      <QueryParams position={position} />
       <UI />
       <Scene
         renderer={renderer}
