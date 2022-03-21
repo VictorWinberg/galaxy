@@ -3,12 +3,21 @@ import * as THREE from "three";
 import { FlyControls } from "three/examples/jsm/controls/FlyControls";
 import UI from "./UI";
 import Scene from "./Scene";
+// @ts-ignore
+import { preloadFont } from "troika-three-text";
 
 function App() {
   const [renderer, setRenderer] = useState<THREE.WebGLRenderer>();
   const [camera, setCamera] = useState<THREE.PerspectiveCamera>();
   const [controls, setControls] = useState<FlyControls>();
   const [clock, setClock] = useState<THREE.Clock>();
+  const [fontsLoaded, setFontsLoaded] = useState<boolean>(false);
+  preloadFont(
+    {
+      characters: "abcdefghijklmnopqrstuvwxyz",
+    },
+    () => setFontsLoaded(true)
+  );
 
   useEffect(() => {
     // WebGLRenderer
@@ -58,7 +67,7 @@ function App() {
 
   if (!renderer || !camera || !controls || !clock) return null;
 
-  return (
+  return fontsLoaded ? (
     <>
       <UI />
       <Scene
@@ -68,6 +77,8 @@ function App() {
         clock={clock}
       />
     </>
+  ) : (
+    <div>LOADING</div>
   );
 }
 

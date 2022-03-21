@@ -10,6 +10,7 @@
     "react-scripts": "5.0.0",
     "seedrandom": "^3.0.5",
     "three": "^0.137.5",
+    "troika-three-text": "^0.45.0",
     "typescript": "^4.5.5",
     "web-vitals": "^2.1.4"
   },
