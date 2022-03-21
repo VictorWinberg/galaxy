@@ -1,14 +1,32 @@
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { FlyControls } from "three/examples/jsm/controls/FlyControls";
-import { generateNearbyChunks } from "./ChunkGenerator";
+import { generateNearbyChunks, getChunkId } from "./ChunkGenerator";
 import type { Mesh } from "three";
+import { randomizeName } from "./utils";
+// @ts-ignore
+import { Text } from "troika-three-text";
 
 type Props = {
   renderer: THREE.WebGLRenderer;
   camera: THREE.PerspectiveCamera;
   controls: FlyControls;
   clock: THREE.Clock;
+};
+
+const generateText = (sphere: THREE.Mesh) => {
+  const sphereName = new Text();
+
+  // Set properties to configure:
+  sphereName.text = randomizeName(
+    `${sphere.position.x},${sphere.position.y},${sphere.position.z}`
+  );
+  sphereName.fontSize = 0.6;
+  sphereName.position.y = sphere.position.y + 3;
+  sphereName.position.x = sphere.position.x - 1;
+  sphereName.position.z = sphere.position.z;
+  sphereName.color = 0x9966ff;
+  return sphereName;
 };
 
 function Scene({ renderer, camera, controls, clock }: Props) {
@@ -43,30 +61,36 @@ function Scene({ renderer, camera, controls, clock }: Props) {
     scene.add(ambLight);
 
     // Meshes
-    const sphere = new THREE.Mesh(
+    const sphereZero = new THREE.Mesh(
       new THREE.SphereGeometry(2, 32, 16),
       new THREE.MeshStandardMaterial({
         color: 0x00ccaa,
       })
     );
-    sphere.position.set(0, 0, 0);
-    sphere.castShadow = true;
-    sphere.receiveShadow = true;
-    scene.add(sphere);
+    sphereZero.position.set(0, 0, 0);
+    sphereZero.castShadow = true;
+    sphereZero.receiveShadow = true;
+    const sphereZeroText = generateText(sphereZero);
+    scene.add(sphereZero);
+    scene.add(sphereZeroText);
 
     var wireframe = new THREE.LineSegments(
-      new THREE.EdgesGeometry(sphere.geometry),
+      new THREE.EdgesGeometry(sphereZero.geometry),
       new THREE.LineBasicMaterial({ color: 0xffffff })
     );
-    sphere.add(wireframe);
+    sphereZero.add(wireframe);
 
     // Animation
     const animate = function () {
-      sphere.rotation.x += 0.001;
-      sphere.rotation.y += 0.001;
+      sphereZero.rotation.x += 0.001;
+      sphereZero.rotation.y += 0.001;
       const { x, y, z } = camera.position;
       const spheres: Mesh[] = generateNearbyChunks(x, y, z);
-      spheres.forEach((s) => scene.add(s));
+      spheres.forEach((sphere) => {
+        const sphereText = generateText(sphere);
+        scene.add(sphere);
+        scene.add(sphereText);
+      });
 
       controls.update(clock.getDelta());
       renderer.render(scene, camera);
