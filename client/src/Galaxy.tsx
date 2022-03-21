@@ -1,20 +1,27 @@
 import { useEffect, useLayoutEffect, useState } from "react";
 import * as THREE from "three";
 import { FlyControls } from "three/examples/jsm/controls/FlyControls";
+import { preloadFont } from "troika-three-text";
 import UI from "./UI";
 import Scene from "./Scene";
-// @ts-ignore
-import { preloadFont } from "troika-three-text";
-import QueryParams from "./QueryParams";
+import QueryParams from "./ParamsPosition";
+import { useParams } from "react-router-dom";
 
-function App() {
+type Point3D = {
+  x: number;
+  y: number;
+  z: number;
+};
+
+function Galaxy() {
   const [renderer, setRenderer] = useState<THREE.WebGLRenderer>();
   const [camera, setCamera] = useState<THREE.PerspectiveCamera>();
   const [controls, setControls] = useState<FlyControls>();
-  const [position, setPosition] =
-    useState<{ x: number; y: number; z: number }>();
+  const [position, setPosition] = useState<Point3D>();
   const [clock, setClock] = useState<THREE.Clock>();
+  const params = useParams();
   const [fontsLoaded, setFontsLoaded] = useState<boolean>(false);
+
   preloadFont(
     {
       characters: "abcdefghijklmnopqrstuvwxyz",
@@ -39,11 +46,8 @@ function App() {
     const near = 1.0;
     const far = 1000;
     const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
-    // TODO: Use qs lib for this
-    const pos = (window.location.search.slice(1) || "0,2,5")
-      .split(",")
-      .map(Number);
-    camera.position.set(pos[0], pos[1], pos[2]);
+    const xyz = params?.location?.slice(1, -1).split(",").map(Number);
+    if (xyz) camera.position.set(xyz[0], xyz[1], xyz[2]);
     setCamera(camera);
 
     // Controls
@@ -80,7 +84,14 @@ function App() {
     return () => window.removeEventListener("resize", OnWindowResize);
   }, [camera, renderer]);
 
-  if (!renderer || !camera || !controls || !clock || !position || !fontsLoaded) {
+  if (
+    !renderer ||
+    !camera ||
+    !controls ||
+    !clock ||
+    !position ||
+    !fontsLoaded
+  ) {
     return <div>LOADING</div>;
   }
 
@@ -98,4 +109,4 @@ function App() {
   );
 }
 
-export default App;
+export default Galaxy;

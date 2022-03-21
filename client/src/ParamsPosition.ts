@@ -1,25 +1,32 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-type Props = {
-  position: { x: number; y: number; z: number };
+type Point3D = {
+  x: number;
+  y: number;
+  z: number;
 };
 
-const QueryParams = ({ position }: Props) => {
+type Props = {
+  position: Point3D;
+};
+
+const ParamsPosition = ({ position }: Props) => {
   const [timeout, setTimeout] = useState(-1);
+  const navigate = useNavigate();
 
   useEffect(() => {
     clearTimeout(timeout);
 
     const timeoutId = window.setTimeout(() => {
       const { x, y, z } = position;
-      window.history.pushState({}, "", `?${x},${y},${z}`);
+      navigate(`/galaxy/@${x},${y},${z}z`);
     }, 100);
 
     setTimeout(timeoutId);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [position]);
 
   return null;
 };
 
-export default QueryParams;
+export default ParamsPosition;
