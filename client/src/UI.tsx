@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { randomizeName } from "./utils";
+import { randomizeName } from "./nameGenerator/utils";
 
 const UI = () => {
   const [planet, setPlanet] = useState(randomizeName(String(Date.now())));

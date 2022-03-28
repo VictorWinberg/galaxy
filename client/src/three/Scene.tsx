@@ -3,7 +3,7 @@ import * as THREE from "three";
 import { FlyControls } from "three/examples/jsm/controls/FlyControls";
 import { generateNearbyChunks } from "./ChunkGenerator";
 import type { Mesh } from "three";
-import { randomizeName } from "./utils";
+import { randomizeName } from "../nameGenerator/utils";
 // @ts-ignore
 import { Text } from "troika-three-text";
 import { MOVE_OFFSET } from "./constants";

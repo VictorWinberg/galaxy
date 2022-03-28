@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Galaxy from "./Galaxy";
+import Galaxy from "./three/Galaxy";
 
 function App() {
   return (
