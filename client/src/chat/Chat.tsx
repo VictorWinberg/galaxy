@@ -15,7 +15,9 @@ function Chat() {
       setPeer(_peer);
 
       if (peer) {
-        Object.keys(peer.connections).forEach((peerId) => connectPeer(_peer, peerId));
+        Object.keys(peer.connections).forEach((peerId) =>
+          connectPeer(_peer, peerId)
+        );
         peer.destroy();
       }
     });
@@ -59,7 +61,11 @@ function Chat() {
 
   function connectPeer(_peer: Peer, otherPeerId: string) {
     if (!_peer) throw new Error("Peer undefined");
-    if (otherPeerId === _peer.id || Object.keys(_peer.connections).includes(otherPeerId)) return;
+    if (
+      otherPeerId === _peer.id ||
+      Object.keys(_peer.connections).includes(otherPeerId)
+    )
+      return;
 
     const conn = _peer.connect(otherPeerId);
     conn.on("open", () => {
@@ -76,7 +82,9 @@ function Chat() {
       setChat((prev) => [...prev, `RECEIVED: ${JSON.stringify(data)}`]);
 
       if (conn.peer === HOST && data.method === "SET_CONNECTIONS") {
-        data.payload.forEach((otherPeerId: string) => connectPeer(_peer, otherPeerId));
+        data.payload.forEach((otherPeerId: string) =>
+          connectPeer(_peer, otherPeerId)
+        );
       }
     });
     conn.on("close", () => {
