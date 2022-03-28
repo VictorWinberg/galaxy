@@ -1,10 +1,12 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { FlyControls } from "three/examples/jsm/controls/FlyControls";
-import { Text } from "troika-three-text";
 import { generateNearbyChunks } from "./ChunkGenerator";
 import type { Mesh } from "three";
 import { randomizeName } from "./utils";
+// @ts-ignore
+import { Text } from "troika-three-text";
+import { MOVE_OFFSET } from "./constants";
 
 type Props = {
   renderer: THREE.WebGLRenderer;
@@ -31,12 +33,30 @@ const generateText = (sphere: THREE.Mesh) => {
 function Scene({ renderer, camera, controls, clock }: Props) {
   const frameId = useRef(-1);
   const ref = useRef<HTMLDivElement>(null);
+  const raycaster = new THREE.Raycaster();
+  const pointer = new THREE.Vector2();
+  const scene = useMemo(() => new THREE.Scene(), []);
+
+  const onPointerMove = (event: any) => {
+    pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
+    pointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
+    raycaster.setFromCamera(pointer, camera);
+    const intersects = raycaster.intersectObjects(scene.children);
+    if (intersects && intersects.length) {
+      const first = intersects[0].object.position;
+      camera.position.set(
+        first.x + MOVE_OFFSET,
+        first.y + MOVE_OFFSET,
+        first.z + MOVE_OFFSET
+      );
+      camera.lookAt(first.x, first.y, first.z);
+    }
+  };
+
+  window.addEventListener("click", onPointerMove);
 
   useEffect(() => {
     ref.current!.firstChild!.replaceWith(renderer.domElement);
-
-    // Scene
-    const scene = new THREE.Scene();
 
     // Lights
     const light = new THREE.DirectionalLight(0xffffff, 1.0);
@@ -97,7 +117,7 @@ function Scene({ renderer, camera, controls, clock }: Props) {
     };
     frameId.current = requestAnimationFrame(animate);
     return () => cancelAnimationFrame(frameId.current);
-  }, [renderer, camera, controls, clock]);
+  }, [renderer, camera, controls, clock, scene]);
 
   return (
     <div id="scene" ref={ref}>
