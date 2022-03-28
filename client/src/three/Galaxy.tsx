@@ -1,108 +1,86 @@
-import { useEffect, useLayoutEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
+import StatsModule from "three/examples/jsm/libs/stats.module";
 import { FlyControls } from "three/examples/jsm/controls/FlyControls";
-import { preloadFont } from "troika-three-text";
-import Scene from "./Scene";
-import ParamsPosition from "../ParamsPosition";
-import ChatOverlay from "../chat/ChatOverlay";
 
-type Point3D = {
-  x: number;
-  y: number;
-  z: number;
-};
+function Planet(props: any) {
+  // This reference gives us direct access to the THREE.Mesh object
+  const ref = useRef<THREE.Mesh>();
 
-function Galaxy() {
-  const [renderer, setRenderer] = useState<THREE.WebGLRenderer>();
-  const [camera, setCamera] = useState<THREE.PerspectiveCamera>();
-  const [controls, setControls] = useState<FlyControls>();
-  const [position, setPosition] = useState<Point3D>();
-  const [rotation, setRotation] = useState<Point3D>();
-  const [clock, setClock] = useState<THREE.Clock>();
-  const params = useParams();
-  const [fontsLoaded, setFontsLoaded] = useState<boolean>(false);
+  // Hold state for hovered and clicked events
+  const [hovered, hover] = useState(false);
+  const [clicked, click] = useState(false);
+  // Subscribe this component to the render-loop, rotate the mesh every frame
+  useFrame((state, delta) => (ref.current!.rotation.x += 0.01));
 
-  preloadFont(
-    {
-      characters: "abcdefghijklmnopqrstuvwxyz",
-    },
-    () => setFontsLoaded(true)
+  // Return the view, these are regular Threejs elements expressed in JSX
+  return (
+    <mesh
+      {...props}
+      ref={ref}
+      scale={clicked ? 1.5 : 1}
+      onClick={(event) => click(!clicked)}
+      onPointerOver={(event) => hover(true)}
+      onPointerOut={(event) => hover(false)}
+    >
+      <sphereGeometry args={[2, 32, 16]} />
+      <meshStandardMaterial color={hovered ? "hotpink" : "orange"} />
+    </mesh>
   );
+}
+
+function Stats() {
+  const stats = useMemo(StatsModule, []);
+
+  useFrame(() => stats.update());
 
   useEffect(() => {
-    // WebGLRenderer
-    const renderer = new THREE.WebGLRenderer({
-      antialias: true,
-    });
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-    renderer.setPixelRatio(window.devicePixelRatio);
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    setRenderer(renderer);
+    document.body.appendChild(stats.dom);
+  }, []);
 
-    // Camera
-    const fov = 60;
-    const aspect = window.innerWidth / window.innerHeight;
-    const near = 1.0;
-    const far = 1000;
-    const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
-    const xyz = params?.location?.split(/[@,+]/).map(Number);
-    if (xyz) {
-      camera.position.set(xyz[1], xyz[2], xyz[3]);
-      camera.rotation.set(xyz[4], xyz[5], xyz[6]);
-    }
-    setCamera(camera);
+  return null;
+}
 
-    // Controls
-    const controls = new FlyControls(camera, renderer.domElement);
+const CameraController = () => {
+  const { camera, gl } = useThree();
+  const controls = useMemo(() => new FlyControls(camera, gl.domElement), []);
+  const clock = useMemo(() => new THREE.Clock(), []);
+
+  useEffect(() => {
     controls.movementSpeed = 10;
     controls.rollSpeed = Math.PI / 24;
     controls.autoForward = false;
     controls.dragToLook = true;
+    return () => {
+      controls.dispose();
+    };
+  }, [camera, gl]);
 
-    // Camera position and rotation
-    controls.addEventListener("change", () => {
-      const { x: px, y: py, z: pz } = camera.position;
-      setPosition({ x: px, y: py, z: pz });
-      const { x: rx, y: ry, z: rz } = camera.rotation;
-      setRotation({ x: rx, y: ry, z: rz });
-    });
+  useFrame(() => controls.update(clock.getDelta()));
 
-    const clock = new THREE.Clock();
+  return null;
+};
 
-    setControls(controls);
-    setClock(clock);
-  }, []);
-
-  useLayoutEffect(() => {
-    function OnWindowResize() {
-      if (!renderer || !camera) return;
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-    }
-
-    window.addEventListener("resize", OnWindowResize);
-
-    return () => window.removeEventListener("resize", OnWindowResize);
-  }, [camera, renderer]);
-
-  if (!renderer || !camera || !controls || !clock || !fontsLoaded) {
-    return <div>LOADING</div>;
-  }
-
+function Galaxy() {
   return (
-    <>
-      <ParamsPosition position={position} rotation={rotation} />
-      <ChatOverlay />
-      <Scene
-        renderer={renderer}
-        camera={camera}
-        controls={controls}
-        clock={clock}
-      />
-    </>
+    <Canvas
+      camera={{
+        fov: 60,
+        aspect: window.innerWidth / window.innerHeight,
+        near: 1.0,
+        far: 1000,
+      }}
+    >
+      <CameraController />
+      <ambientLight color={0x101010} />
+      <directionalLight position={[20, 100, 10]} castShadow />
+      <pointLight position={[10, 10, 10]} />
+      <Planet position={[0, 0, 5]} />
+      <Planet position={[-1.2, 0, 0]} />
+      <Planet position={[1.2, 0, 0]} />
+      <Stats />
+    </Canvas>
   );
 }
 
