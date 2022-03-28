@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { FlyControls } from "three/examples/jsm/controls/FlyControls";
+import Stats from "three/examples/jsm/libs/stats.module";
 import { generateNearbyChunks } from "./ChunkGenerator";
 import type { Mesh } from "three";
 import { randomizeName } from "../nameGenerator/utils";
@@ -99,12 +100,16 @@ function Scene({ renderer, camera, controls, clock }: Props) {
     );
     sphereZero.add(wireframe);
 
+    var stats = Stats();
+    document.body.appendChild(stats.dom);
+
     // Animation
     const animate = function () {
       sphereZero.rotation.x += 0.001;
       sphereZero.rotation.y += 0.001;
       const { x, y, z } = camera.position;
       const spheres: Mesh[] = generateNearbyChunks(x, y, z);
+
       spheres.forEach((sphere) => {
         const sphereText = generateText(sphere);
         scene.add(sphere);
@@ -113,6 +118,7 @@ function Scene({ renderer, camera, controls, clock }: Props) {
 
       controls.update(clock.getDelta());
       renderer.render(scene, camera);
+      stats.update();
       frameId.current = requestAnimationFrame(animate);
     };
     frameId.current = requestAnimationFrame(animate);
