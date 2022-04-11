@@ -5,6 +5,7 @@ import { preloadFont } from "troika-three-text";
 import Scene from "./Scene";
 import QueryParams from "../ParamsPosition";
 import { useParams } from "react-router-dom";
+import MyAccount from "../my-profile";
 
 type Point3D = {
   x: number;
@@ -96,6 +97,7 @@ function Galaxy() {
 
   return (
     <>
+      <MyAccount></MyAccount>
       <QueryParams position={position} />
       <Scene
         renderer={renderer}
