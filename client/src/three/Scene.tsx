@@ -5,7 +5,6 @@ import Stats from "three/examples/jsm/libs/stats.module";
 import { generateNearbyChunks } from "./ChunkGenerator";
 import type { Mesh } from "three";
 import { randomizeName } from "../nameGenerator/utils";
-// @ts-ignore
 import { Text } from "troika-three-text";
 import { MOVE_OFFSET } from "./constants";
 

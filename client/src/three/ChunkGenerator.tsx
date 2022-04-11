@@ -1,9 +1,13 @@
-import { useFrame } from "@react-three/fiber";
+import { useFrame, extend } from "@react-three/fiber";
+import { Text } from "troika-three-text";
 import PoissonDiskSampling from "poisson-disk-sampling";
 import { useRef, useState } from "react";
 import seedrandom from "seedrandom";
 import * as THREE from "three";
 import { CHUNK_SIZE, OFFSET, PLAYER_VIEW_LENGTH } from "./constants";
+import { randomizeName } from "../nameGenerator/utils";
+
+extend({ Text });
 
 type Chunk = {
   xId: number;
@@ -32,6 +36,17 @@ function Planet(props: any) {
       onPointerOver={(event) => hover(true)}
       onPointerOut={(event) => hover(false)}
     >
+      <text
+        /* @ts-ignore */
+        text={randomizeName(
+          `${props.position.x},${props.position.y},${props.position.z}`
+        )}
+        anchorX="center"
+        anchorY="middle"
+        color="0x9966ff"
+        fontSize="0.6"
+        position={[0, 0, 2]}
+      />
       <sphereGeometry args={[2, 32, 16]} />
       <meshStandardMaterial color={hovered ? "hotpink" : "orange"} />
     </mesh>
