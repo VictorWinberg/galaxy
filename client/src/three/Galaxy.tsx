@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
-import StatsModule from "three/examples/jsm/libs/stats.module";
 import { FlyControls } from "three/examples/jsm/controls/FlyControls";
+import StatsModule from "three/examples/jsm/libs/stats.module";
+import { generateNearbyChunks } from "./ChunkGenerator";
 
 function Planet(props: any) {
   // This reference gives us direct access to the THREE.Mesh object
@@ -61,6 +62,12 @@ const CameraController = () => {
 
   return null;
 };
+const Planets = () => {
+  const { camera } = useThree();
+  const pos = camera.position;
+  const planets = generateNearbyChunks(pos.x, pos.y, pos.z);
+  return planets;
+};
 
 function Galaxy() {
   return (
@@ -76,6 +83,7 @@ function Galaxy() {
       <ambientLight color={0x101010} />
       <directionalLight position={[20, 100, 10]} castShadow />
       <pointLight position={[10, 10, 10]} />
+      <Planets />
       <Planet position={[0, 0, 5]} />
       <Planet position={[-1.2, 0, 0]} />
       <Planet position={[1.2, 0, 0]} />

@@ -1,8 +1,9 @@
-import { CHUNK_SIZE, PLAYER_VIEW_LENGTH, OFFSET } from "./constants";
-import * as THREE from "three";
+import { useFrame } from "@react-three/fiber";
 import PoissonDiskSampling from "poisson-disk-sampling";
+import { useRef, useState } from "react";
 import seedrandom from "seedrandom";
-import type { Mesh } from "three";
+import * as THREE from "three";
+import { CHUNK_SIZE, OFFSET, PLAYER_VIEW_LENGTH } from "./constants";
 
 type Chunk = {
   xId: number;
@@ -11,11 +12,32 @@ type Chunk = {
 };
 const generatedChunks = new Set<String>();
 
-export const generateNearbyChunks = (
-  x: number,
-  y: number,
-  z: number
-): Mesh[] => {
+function Planet(props: any) {
+  // This reference gives us direct access to the THREE.Mesh object
+  const ref = useRef<THREE.Mesh>();
+
+  // Hold state for hovered and clicked events
+  const [hovered, hover] = useState(false);
+  const [clicked, click] = useState(false);
+  // Subscribe this component to the render-loop, rotate the mesh every frame
+  useFrame((state, delta) => (ref.current!.rotation.x += 0.01));
+
+  // Return the view, these are regular Threejs elements expressed in JSX
+  return (
+    <mesh
+      {...props}
+      ref={ref}
+      scale={clicked ? 1.5 : 1}
+      onClick={(event) => click(!clicked)}
+      onPointerOver={(event) => hover(true)}
+      onPointerOut={(event) => hover(false)}
+    >
+      <sphereGeometry args={[2, 32, 16]} />
+      <meshStandardMaterial color={hovered ? "hotpink" : "orange"} />
+    </mesh>
+  );
+}
+export const generateNearbyChunks = (x: number, y: number, z: number): any => {
   const chunkIds = getIdsNearbyChunks(x, y, z);
   const allSpheres = Array.from(chunkIds).flatMap((chunkId: string) =>
     generateChunk(chunkId)
@@ -23,10 +45,12 @@ export const generateNearbyChunks = (
   return allSpheres;
 };
 
-const generateChunk = (chunkId: string): Mesh[] => {
-  if (generatedChunks.has(chunkId)) {
-    return [];
-  }
+const generateChunk = (chunkId: string): any => {
+  // NOT SURE IF OPTIMIZING IS NEEDED ANYMORE
+  // if (generatedChunks.has(chunkId)) {
+  //   return [];
+  // }
+
   // eslint-disable-next-line no-console
   console.log(`Generating chunk: ${chunkId}`);
   var poissonSampler = new PoissonDiskSampling(
@@ -40,7 +64,7 @@ const generateChunk = (chunkId: string): Mesh[] => {
   );
   const { xId, yId, zId } = getChunkFromId(chunkId);
   var points = poissonSampler.fill();
-  const spheres: Mesh[] = points.map(([px, py, pz]) => {
+  const spheres: any = points.map(([px, py, pz]) => {
     const xPos = px + xId * CHUNK_SIZE - OFFSET;
     const yPos = py + yId * CHUNK_SIZE - OFFSET;
     const zPos = pz + zId * CHUNK_SIZE - OFFSET;
@@ -91,13 +115,21 @@ const getChunkFromId = (chunkId: String): Chunk => {
   };
 };
 
-const createSphere = (x: number, y: number, z: number): Mesh => {
-  const sphere = new THREE.Mesh(
-    new THREE.SphereGeometry(2, 32, 16),
-    new THREE.MeshStandardMaterial({
-      color: 0x00ccaa,
-    })
+export const createSphere = (x: number, y: number, z: number): any => {
+  // const sphere = new THREE.Mesh(
+  //   new THREE.SphereGeometry(2, 32, 16),
+  //   new THREE.MeshStandardMaterial({
+  //     color: 0x00ccaa,
+  //   })
+  // );
+  const sphere1 = (
+    <Planet
+      radius={2}
+      widthSegments={32}
+      heightSegments={16}
+      position={[x, y, z]}
+    />
   );
-  sphere.position.set(x, y, z);
-  return sphere;
+  // sphere.position.set(x, y, z);
+  return sphere1;
 };
