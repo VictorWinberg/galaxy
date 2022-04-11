@@ -1,16 +1,58 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import Peer from "peerjs";
 import { useEffect, useState } from "react";
+import styled from "styled-components";
 
 const HOST = "HOST";
+const HostInfo = styled.h1`
+  color: #fafafa;
+`;
 
-function Chat() {
+const HostInfoWrapper = styled.div`
+  display: flex;
+`;
+
+const Wrapper = styled.div`
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+`;
+
+const ChatContent = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+
+const MessageField = styled.input`
+  border-radius: 8px;
+  height: 32px;
+  font-size: 16px;
+`;
+
+const MessageContainer = styled.div`
+  width: 100%;
+  color: #fafafa;
+  height: 75vh;
+  overflow: scroll;
+`;
+
+const SendButton = styled.button`
+  border-radius: 8px;
+  background-color: #fafafa;
+  height: 32px;
+  margin-left: auto;
+  font-weight: 600;
+`;
+
+const InputWrapper = styled.div``;
+
+const Chat = () => {
   const [peer, setPeer] = useState<Peer>();
 
   const [msg, setMsg] = useState<string>("");
   const [chat, setChat] = useState<string[]>([]);
 
-  function initializePeer(_peer: Peer) {
+  const initializePeer = (_peer: Peer) => {
     _peer.on("open", () => {
       setPeer(_peer);
 
@@ -57,9 +99,9 @@ function Chat() {
         console.log("peer::err", err.type);
       }
     });
-  }
+  };
 
-  function connectPeer(_peer: Peer, otherPeerId: string) {
+  const connectPeer = (_peer: Peer, otherPeerId: string) => {
     if (!_peer) throw new Error("Peer undefined");
     if (
       otherPeerId === _peer.id ||
@@ -95,16 +137,16 @@ function Chat() {
         initializePeer(peer);
       }
     });
-  }
+  };
 
-  function sendMsg() {
+  const sendMsg = () => {
     if (!peer) throw new Error("Peer undefined");
 
     setChat((prev) => [...prev, `SEND: ${msg}`]);
     Object.values(peer.connections).forEach((connections: any) =>
       connections.forEach((c: Peer.DataConnection) => c.send(msg))
     );
-  }
+  };
 
   // initialize peer
   useEffect(() => {
@@ -123,17 +165,23 @@ function Chat() {
   }, [peer]);
 
   return (
-    <>
-      <h1 style={{ color: "white" }}>Peer ID: {peer?.id}</h1>
-      <input value={msg} onChange={(e) => setMsg(e.target.value)} />
-      <button onClick={sendMsg}>Send MSG</button>
-      <div id="chat" style={{ color: "white" }}>
-        {chat.map((msg, idx) => (
-          <p key={idx}>{msg}</p>
-        ))}
-      </div>
-    </>
+    <Wrapper>
+      <HostInfoWrapper>
+        <HostInfo>Peer ID: {peer?.id}</HostInfo>
+      </HostInfoWrapper>
+      <ChatContent>
+        <MessageContainer>
+          {chat.map((msg, idx) => (
+            <p key={idx}>{msg}</p>
+          ))}
+        </MessageContainer>
+        <InputWrapper>
+          <MessageField value={msg} onChange={(e) => setMsg(e.target.value)} />
+          <SendButton onClick={sendMsg}>Send</SendButton>
+        </InputWrapper>
+      </ChatContent>
+    </Wrapper>
   );
-}
+};
 
 export default Chat;

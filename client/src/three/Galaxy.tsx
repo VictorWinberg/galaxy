@@ -5,6 +5,7 @@ import { preloadFont } from "troika-three-text";
 import Scene from "./Scene";
 import QueryParams from "../ParamsPosition";
 import { useParams } from "react-router-dom";
+import ChatOverlay from "../chat/ChatOverlay";
 
 type Point3D = {
   x: number;
@@ -97,6 +98,7 @@ function Galaxy() {
   return (
     <>
       <QueryParams position={position} />
+      <ChatOverlay />
       <Scene
         renderer={renderer}
         camera={camera}
