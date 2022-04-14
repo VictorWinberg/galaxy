@@ -4,29 +4,23 @@ import { useEffect, useState } from "react";
 import styled from "styled-components";
 
 const HOST = "HOST";
-const HostInfo = styled.h1`
-  color: #fafafa;
-`;
 
 const HostInfoWrapper = styled.div`
+  justify-content: center;
   display: flex;
+  margin-top: 24px;
 `;
 
 const Wrapper = styled.div`
-  display: flex;
-  height: 100%;
-  flex-direction: column;
-`;
-
-const ChatContent = styled.div`
-  display: flex;
-  flex-direction: column;
+  width: 100%;
 `;
 
 const MessageField = styled.input`
   border-radius: 8px;
   height: 32px;
   font-size: 16px;
+  width: 40%;
+  border: none;
 `;
 
 const MessageContainer = styled.div`
@@ -34,17 +28,31 @@ const MessageContainer = styled.div`
   color: #fafafa;
   height: 75vh;
   overflow: scroll;
+  display: flex;
+  margin: 0px 16px;
+  flex-direction: column;
+`;
+
+const Message = styled.p`
+  margin: 8px 0px;
 `;
 
 const SendButton = styled.button`
   border-radius: 8px;
-  background-color: #fafafa;
+  background-color: #fff;
   height: 32px;
   margin-left: auto;
   font-weight: 600;
+  margin-left: 16px;
+  border: none;
 `;
 
-const InputWrapper = styled.div``;
+const InputWrapper = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 8px;
+`;
 
 const Chat = () => {
   const [peer, setPeer] = useState<Peer>();
@@ -146,6 +154,7 @@ const Chat = () => {
     Object.values(peer.connections).forEach((connections: any) =>
       connections.forEach((c: Peer.DataConnection) => c.send(msg))
     );
+    setMsg("");
   };
 
   // initialize peer
@@ -167,19 +176,17 @@ const Chat = () => {
   return (
     <Wrapper>
       <HostInfoWrapper>
-        <HostInfo>Peer ID: {peer?.id}</HostInfo>
+        <h3>Peer ID: {peer?.id}</h3>
       </HostInfoWrapper>
-      <ChatContent>
-        <MessageContainer>
-          {chat.map((msg, idx) => (
-            <p key={idx}>{msg}</p>
-          ))}
-        </MessageContainer>
-        <InputWrapper>
-          <MessageField value={msg} onChange={(e) => setMsg(e.target.value)} />
-          <SendButton onClick={sendMsg}>Send</SendButton>
-        </InputWrapper>
-      </ChatContent>
+      <MessageContainer>
+        {chat.map((msg, idx) => (
+          <Message key={idx}>{msg}</Message>
+        ))}
+      </MessageContainer>
+      <InputWrapper>
+        <MessageField value={msg} onChange={(e) => setMsg(e.target.value)} />
+        <SendButton onClick={sendMsg}>Send</SendButton>
+      </InputWrapper>
     </Wrapper>
   );
 };
