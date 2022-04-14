@@ -5,7 +5,7 @@ const ChatIcon = () => (
     xmlns="http://www.w3.org/2000/svg"
     width="32"
     height="32"
-    enable-background="new 0 0 32 32"
+    enableBackground="new 0 0 32 32"
     viewBox="0 0 32 32"
   >
     <path

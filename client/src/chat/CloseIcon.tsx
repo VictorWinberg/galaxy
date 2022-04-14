@@ -5,7 +5,7 @@ const CloseIcon = () => (
     xmlns="http://www.w3.org/2000/svg"
     width="20"
     height="20"
-    enable-background="new 0 0 28 28"
+    enableBackground="new 0 0 28 28"
     viewBox="0 0 28 28"
     style={{
       position: "absolute",

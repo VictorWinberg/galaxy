@@ -1,58 +1,9 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import Peer from "peerjs";
 import { useEffect, useState } from "react";
-import styled from "styled-components";
+import "./chat.css";
 
 const HOST = "HOST";
-
-const HostInfoWrapper = styled.div`
-  justify-content: center;
-  display: flex;
-  margin-top: 24px;
-`;
-
-const Wrapper = styled.div`
-  width: 100%;
-`;
-
-const MessageField = styled.input`
-  border-radius: 8px;
-  height: 32px;
-  font-size: 16px;
-  width: 40%;
-  border: none;
-`;
-
-const MessageContainer = styled.div`
-  width: 100%;
-  color: #fafafa;
-  height: 75vh;
-  overflow: scroll;
-  display: flex;
-  margin: 0px 16px;
-  flex-direction: column;
-`;
-
-const Message = styled.p`
-  margin: 8px 0px;
-`;
-
-const SendButton = styled.button`
-  border-radius: 8px;
-  background-color: #fff;
-  height: 32px;
-  margin-left: auto;
-  font-weight: 600;
-  margin-left: 16px;
-  border: none;
-`;
-
-const InputWrapper = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-top: 8px;
-`;
 
 const Chat = () => {
   const [peer, setPeer] = useState<Peer>();
@@ -174,20 +125,28 @@ const Chat = () => {
   }, [peer]);
 
   return (
-    <Wrapper>
-      <HostInfoWrapper>
+    <div className="wrapper">
+      <div className="host-info">
         <h3>Peer ID: {peer?.id}</h3>
-      </HostInfoWrapper>
-      <MessageContainer>
+      </div>
+      <div className="message-container">
         {chat.map((msg, idx) => (
-          <Message key={idx}>{msg}</Message>
+          <p className="message" key={idx}>
+            {msg}
+          </p>
         ))}
-      </MessageContainer>
-      <InputWrapper>
-        <MessageField value={msg} onChange={(e) => setMsg(e.target.value)} />
-        <SendButton onClick={sendMsg}>Send</SendButton>
-      </InputWrapper>
-    </Wrapper>
+      </div>
+      <div className="input-wrapper">
+        <input
+          className="message-field"
+          value={msg}
+          onChange={(e) => setMsg(e.target.value)}
+        />
+        <button className="send-button" onClick={sendMsg}>
+          Send
+        </button>
+      </div>
+    </div>
   );
 };
 
