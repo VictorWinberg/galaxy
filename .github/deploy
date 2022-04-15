@@ -1,6 +1,9 @@
 #!/bin/bash
 set -eu # exit script on errors
 
+echo "> npm run install:server"
+npm run install:server
+
 # build is done in github actions
 
-export MAIN="server/dist/src/index.js"
+export MAIN="server/dist/index.js"
