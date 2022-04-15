@@ -18,7 +18,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build --stats",
+    "build": "CI=false react-scripts build --stats",
     "analyze": "webpack-bundle-analyzer build/bundle-stats.json",
     "eject": "react-scripts eject"
   },
