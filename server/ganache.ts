@@ -1,4 +1,4 @@
-const ganache = require("ganache");
+import Ganache from "ganache";
 require("dotenv").config();
 
 const { GANACHE_PORT, GANACHE_SEED, GANACHE_CHAIN_ID } = process.env;
@@ -9,7 +9,7 @@ const options = {
   account_keys_path: ".secrets",
   chainId: GANACHE_CHAIN_ID || 1337,
 };
-const server = ganache.server(options);
+const server = Ganache.server(options as any);
 const PORT = Number(GANACHE_PORT || 7545);
 server.listen(PORT, async (err) => {
   if (err) throw err;

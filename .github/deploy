@@ -1,7 +1,6 @@
 #!/bin/bash
 set -eu # exit script on errors
 
-echo "> npm install ganache..."
-npm install ganache@7.0.0 dotenv@14.2.0
+# build is done in github actions
 
-export MAIN="ganache.js"
+export MAIN="server/dist/src/index.js"

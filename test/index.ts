@@ -1,0 +1,38 @@
+import Web3 from "web3";
+import "dotenv/config";
+import {
+  getCryptoPrice,
+  checkBlock,
+  accounts,
+  userBalance,
+  callContractMethods,
+  mintToken,
+} from "./utils";
+import Config, { ENV } from "./configuration";
+const BlockChat = require("../server/output/BlockChat.json");
+const GalaxyToken = require("../server/output/GalaxyToken.json");
+
+Config.SET_ENV = ENV.LOCAL;
+
+const web3 = new Web3(Config.RPC_SERVER);
+
+async function main() {
+  await getCryptoPrice();
+  await checkBlock(web3, "latest");
+  await accounts(web3);
+  await userBalance(web3, Config.USER_ADDRESS);
+  await callContractMethods(
+    web3,
+    Config.USER_ADDRESS,
+    BlockChat.abi,
+    Config.CONTRACT_CHAT_ADDRESS
+  );
+  await mintToken(
+    web3,
+    GalaxyToken.abi,
+    Config.CONTRACT_GALAXY_ADDRESS,
+    Config.USER_ADDRESS
+  );
+}
+
+main();

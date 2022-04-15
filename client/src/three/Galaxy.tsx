@@ -2,6 +2,7 @@ import { useEffect, useLayoutEffect, useState } from "react";
 import * as THREE from "three";
 import { FlyControls } from "three/examples/jsm/controls/FlyControls";
 import { preloadFont } from "troika-three-text";
+import GunChat from "../chat/GunChat";
 import Scene from "./Scene";
 import QueryParams from "../ParamsPosition";
 import { useParams } from "react-router-dom";
@@ -97,6 +98,7 @@ function Galaxy() {
   return (
     <>
       <QueryParams position={position} />
+      <GunChat />
       <Scene
         renderer={renderer}
         camera={camera}
