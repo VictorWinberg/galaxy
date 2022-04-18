@@ -8,11 +8,3 @@ body {
   padding: 0;
   overscroll-behavior: none;
 }
-
-.ui-overlay {
-  position: absolute;
-  text-align: center;
-  width: 100%;
-  user-select: none;
-  cursor: pointer;
-}
