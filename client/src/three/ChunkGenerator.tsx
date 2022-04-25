@@ -25,7 +25,7 @@ function Planet(props: any) {
   const [clicked, click] = useState(false);
   // Subscribe this component to the render-loop, rotate the mesh every frame
   useFrame((state, delta) => (ref.current!.rotation.x += 0.01));
-
+  const [x, y, z] = props.position;
   // Return the view, these are regular Threejs elements expressed in JSX
   return (
     <mesh
@@ -38,9 +38,7 @@ function Planet(props: any) {
     >
       <text
         /* @ts-ignore */
-        text={randomizeName(
-          `${props.position.x},${props.position.y},${props.position.z}`
-        )}
+        text={randomizeName(`${x},${y},${z}`)}
         anchorX="center"
         anchorY="middle"
         color="0x9966ff"
@@ -52,7 +50,7 @@ function Planet(props: any) {
     </mesh>
   );
 }
-export const generateNearbyChunks = (x: number, y: number, z: number): any => {
+export const generateNearbyChunks = (x: number, y: number, z: number) => {
   const chunkIds = getIdsNearbyChunks(x, y, z);
   const allSpheres = Array.from(chunkIds).flatMap((chunkId: string) =>
     generateChunk(chunkId)
@@ -60,12 +58,7 @@ export const generateNearbyChunks = (x: number, y: number, z: number): any => {
   return allSpheres;
 };
 
-const generateChunk = (chunkId: string): any => {
-  // NOT SURE IF OPTIMIZING IS NEEDED ANYMORE
-  // if (generatedChunks.has(chunkId)) {
-  //   return [];
-  // }
-
+const generateChunk = (chunkId: string) => {
   // eslint-disable-next-line no-console
   console.log(`Generating chunk: ${chunkId}`);
   var poissonSampler = new PoissonDiskSampling(
@@ -79,7 +72,7 @@ const generateChunk = (chunkId: string): any => {
   );
   const { xId, yId, zId } = getChunkFromId(chunkId);
   var points = poissonSampler.fill();
-  const spheres: any = points.map(([px, py, pz]) => {
+  const spheres = points.map(([px, py, pz]) => {
     const xPos = px + xId * CHUNK_SIZE - OFFSET;
     const yPos = py + yId * CHUNK_SIZE - OFFSET;
     const zPos = pz + zId * CHUNK_SIZE - OFFSET;
@@ -130,21 +123,14 @@ const getChunkFromId = (chunkId: String): Chunk => {
   };
 };
 
-export const createSphere = (x: number, y: number, z: number): any => {
-  // const sphere = new THREE.Mesh(
-  //   new THREE.SphereGeometry(2, 32, 16),
-  //   new THREE.MeshStandardMaterial({
-  //     color: 0x00ccaa,
-  //   })
-  // );
-  const sphere1 = (
+export const createSphere = (x: number, y: number, z: number): JSX.Element => {
+  return (
     <Planet
+      key={getChunkId(x, y, z)}
       radius={2}
       widthSegments={32}
       heightSegments={16}
       position={[x, y, z]}
     />
   );
-  // sphere.position.set(x, y, z);
-  return sphere1;
 };

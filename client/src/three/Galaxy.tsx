@@ -66,7 +66,7 @@ const Planets = () => {
   const { camera } = useThree();
   const pos = camera.position;
   const planets = generateNearbyChunks(pos.x, pos.y, pos.z);
-  return planets;
+  return <>{planets}</>;
 };
 
 function Galaxy() {
