@@ -4,6 +4,7 @@ import * as THREE from "three";
 import { FlyControls } from "three/examples/jsm/controls/FlyControls";
 import StatsModule from "three/examples/jsm/libs/stats.module";
 import { generateNearbyChunks } from "./ChunkGenerator";
+import { MOVE_OFFSET } from "./constants";
 
 function Planet(props: any) {
   // This reference gives us direct access to the THREE.Mesh object
@@ -12,16 +13,23 @@ function Planet(props: any) {
   // Hold state for hovered and clicked events
   const [hovered, hover] = useState(false);
   const [clicked, click] = useState(false);
+  const { camera } = useThree();
   // Subscribe this component to the render-loop, rotate the mesh every frame
   useFrame((state, delta) => (ref.current!.rotation.x += 0.01));
-
+  const moveCamera = (event: any, clicked: any) => {
+    console.log(event.point, clicked);
+    const { x, y, z } = event.point;
+    camera.position.set(x + MOVE_OFFSET, y + MOVE_OFFSET, z + MOVE_OFFSET);
+    camera.lookAt(x, y, z);
+    click(clicked);
+  };
   // Return the view, these are regular Threejs elements expressed in JSX
   return (
     <mesh
       {...props}
       ref={ref}
       scale={clicked ? 1.5 : 1}
-      onClick={(event) => click(!clicked)}
+      onClick={(event) => moveCamera(event, !clicked)}
       onPointerOver={(event) => hover(true)}
       onPointerOut={(event) => hover(false)}
     >

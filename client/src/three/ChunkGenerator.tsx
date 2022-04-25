@@ -1,4 +1,4 @@
-import { useFrame, extend } from "@react-three/fiber";
+import { useFrame, extend, useThree } from "@react-three/fiber";
 import { Text } from "troika-three-text";
 import PoissonDiskSampling from "poisson-disk-sampling";
 import { useRef, useState } from "react";
@@ -6,7 +6,7 @@ import seedrandom from "seedrandom";
 import * as THREE from "three";
 import { CHUNK_SIZE, OFFSET, PLAYER_VIEW_LENGTH } from "./constants";
 import { randomizeName } from "../nameGenerator/utils";
-
+import { MOVE_OFFSET } from "./constants";
 extend({ Text });
 
 type Chunk = {
@@ -23,16 +23,23 @@ function Planet(props: any) {
   // Hold state for hovered and clicked events
   const [hovered, hover] = useState(false);
   const [clicked, click] = useState(false);
+  const { camera } = useThree();
   // Subscribe this component to the render-loop, rotate the mesh every frame
   useFrame((state, delta) => (ref.current!.rotation.x += 0.01));
   const [x, y, z] = props.position;
+  const moveCamera = (event: any, clicked: boolean) => {
+    const { x, y, z } = event.point;
+    camera.position.set(x + MOVE_OFFSET, y + MOVE_OFFSET, z + MOVE_OFFSET);
+    camera.lookAt(x, y, z);
+    click(clicked);
+  };
   // Return the view, these are regular Threejs elements expressed in JSX
   return (
     <mesh
       {...props}
       ref={ref}
       scale={clicked ? 1.5 : 1}
-      onClick={(event) => click(!clicked)}
+      onClick={(event) => moveCamera(event, !clicked)}
       onPointerOver={(event) => hover(true)}
       onPointerOut={(event) => hover(false)}
     >
