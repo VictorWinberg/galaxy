@@ -87,12 +87,11 @@ function Scene({ renderer, camera, controls, clock }: Props) {
         color: 0x00ccaa,
       })
     );
-    sphereZero.position.set(0, 0, 0);
+    sphereZero.position.set(0, -2.5, -1);
     sphereZero.castShadow = true;
     sphereZero.receiveShadow = true;
-    const sphereZeroText = generateText(sphereZero);
-    scene.add(sphereZero);
-    scene.add(sphereZeroText);
+    camera.add(sphereZero);
+    scene.add(camera);
 
     var wireframe = new THREE.LineSegments(
       new THREE.EdgesGeometry(sphereZero.geometry),
@@ -105,8 +104,6 @@ function Scene({ renderer, camera, controls, clock }: Props) {
 
     // Animation
     const animate = function () {
-      sphereZero.rotation.x += 0.001;
-      sphereZero.rotation.y += 0.001;
       const { x, y, z } = camera.position;
       const spheres: Mesh[] = generateNearbyChunks(x, y, z);
 
