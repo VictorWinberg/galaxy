@@ -1,10 +1,10 @@
 import { useEffect, useLayoutEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 import * as THREE from "three";
 import { FlyControls } from "three/examples/jsm/controls/FlyControls";
 import { preloadFont } from "troika-three-text";
 import Scene from "./Scene";
-import QueryParams from "../ParamsPosition";
-import { useParams } from "react-router-dom";
+import ParamsPosition from "../ParamsPosition";
 import ChatOverlay from "../chat/ChatOverlay";
 
 type Point3D = {
@@ -18,6 +18,7 @@ function Galaxy() {
   const [camera, setCamera] = useState<THREE.PerspectiveCamera>();
   const [controls, setControls] = useState<FlyControls>();
   const [position, setPosition] = useState<Point3D>();
+  const [rotation, setRotation] = useState<Point3D>();
   const [clock, setClock] = useState<THREE.Clock>();
   const params = useParams();
   const [fontsLoaded, setFontsLoaded] = useState<boolean>(false);
@@ -46,8 +47,11 @@ function Galaxy() {
     const near = 1.0;
     const far = 1000;
     const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
-    const xyz = params?.location?.slice(1, -1).split(",").map(Number);
-    if (xyz) camera.position.set(xyz[0], xyz[1], xyz[2]);
+    const xyz = params?.location?.split(/[@,+]/).map(Number);
+    if (xyz) {
+      camera.position.set(xyz[1], xyz[2], xyz[3]);
+      camera.rotation.set(xyz[4], xyz[5], xyz[6]);
+    }
     setCamera(camera);
 
     // Controls
@@ -57,12 +61,12 @@ function Galaxy() {
     controls.autoForward = false;
     controls.dragToLook = true;
 
-    // Position
-    const { x, y, z } = camera.position;
-    setPosition({ x, y, z });
+    // Camera position and rotation
     controls.addEventListener("change", () => {
-      const { x, y, z } = camera.position;
-      setPosition({ x, y, z });
+      const { x: px, y: py, z: pz } = camera.position;
+      setPosition({ x: px, y: py, z: pz });
+      const { x: rx, y: ry, z: rz } = camera.rotation;
+      setRotation({ x: rx, y: ry, z: rz });
     });
 
     const clock = new THREE.Clock();
@@ -84,20 +88,13 @@ function Galaxy() {
     return () => window.removeEventListener("resize", OnWindowResize);
   }, [camera, renderer]);
 
-  if (
-    !renderer ||
-    !camera ||
-    !controls ||
-    !clock ||
-    !position ||
-    !fontsLoaded
-  ) {
+  if (!renderer || !camera || !controls || !clock || !fontsLoaded) {
     return <div>LOADING</div>;
   }
 
   return (
     <>
-      <QueryParams position={position} />
+      <ParamsPosition position={position} rotation={rotation} />
       <ChatOverlay />
       <Scene
         renderer={renderer}

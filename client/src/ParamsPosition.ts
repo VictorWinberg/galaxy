@@ -8,10 +8,14 @@ type Point3D = {
 };
 
 type Props = {
-  position: Point3D;
+  position: Point3D | undefined;
+  rotation: Point3D | undefined;
 };
 
-const ParamsPosition = ({ position }: Props) => {
+const round = (num: number, digits = 0) =>
+  Math.round(num * Math.pow(10, digits)) / Math.pow(10, digits);
+
+const ParamsPosition = ({ position, rotation }: Props) => {
   const [timeout, setTimeout] = useState(-1);
   const navigate = useNavigate();
 
@@ -19,12 +23,17 @@ const ParamsPosition = ({ position }: Props) => {
     clearTimeout(timeout);
 
     const timeoutId = window.setTimeout(() => {
-      const { x, y, z } = position;
-      navigate(`/galaxy/@${x},${y},${z}z`);
+      if (!position || !rotation) return;
+
+      const { x: px, y: py, z: pz } = position;
+      const pos = `${round(px)},${round(py)},${round(pz)}`;
+      const { x: rx, y: ry, z: rz } = rotation;
+      const rot = `${round(rx, 2)},${round(ry, 2)},${round(rz, 2)}`;
+      navigate(`/galaxy/@${pos}+${rot}`);
     }, 100);
 
     setTimeout(timeoutId);
-  }, [position]);
+  }, [position, rotation]);
 
   return null;
 };
