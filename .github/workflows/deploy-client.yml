@@ -3,6 +3,8 @@ name: Deploy Client
 on:
   push:
     branches: [ master ]
+    paths:
+      - 'client/**'
 
 jobs:
   build_deploy:
