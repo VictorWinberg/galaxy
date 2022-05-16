@@ -1,8 +1,13 @@
-import { CHUNK_SIZE, PLAYER_VIEW_LENGTH, OFFSET } from "./constants";
-import * as THREE from "three";
+import { useFrame, extend, useThree } from "@react-three/fiber";
+import { Text } from "troika-three-text";
 import PoissonDiskSampling from "poisson-disk-sampling";
+import { useRef, useState } from "react";
 import seedrandom from "seedrandom";
-import type { Mesh } from "three";
+import * as THREE from "three";
+import { CHUNK_SIZE, OFFSET, PLAYER_VIEW_LENGTH } from "./constants";
+import { randomizeName } from "../nameGenerator/utils";
+import { MOVE_OFFSET } from "./constants";
+extend({ Text });
 
 type Chunk = {
   xId: number;
@@ -11,11 +16,48 @@ type Chunk = {
 };
 const generatedChunks = new Set<String>();
 
-export const generateNearbyChunks = (
-  x: number,
-  y: number,
-  z: number
-): Mesh[] => {
+function Planet(props: any) {
+  // This reference gives us direct access to the THREE.Mesh object
+  const ref = useRef<THREE.Mesh>();
+
+  // Hold state for hovered and clicked events
+  const [hovered, hover] = useState(false);
+  const [clicked, click] = useState(false);
+  const { camera } = useThree();
+  // Subscribe this component to the render-loop, rotate the mesh every frame
+  useFrame((state, delta) => (ref.current!.rotation.x += 0.01));
+  const [x, y, z] = props.position;
+  const moveCamera = (event: any, clicked: boolean) => {
+    const { x, y, z } = event.point;
+    camera.position.set(x + MOVE_OFFSET, y + MOVE_OFFSET, z + MOVE_OFFSET);
+    camera.lookAt(x, y, z);
+    click(clicked);
+  };
+  // Return the view, these are regular Threejs elements expressed in JSX
+  return (
+    <mesh
+      {...props}
+      ref={ref}
+      scale={clicked ? 1.5 : 1}
+      onClick={(event) => moveCamera(event, !clicked)}
+      onPointerOver={(event) => hover(true)}
+      onPointerOut={(event) => hover(false)}
+    >
+      <text
+        /* @ts-ignore */
+        text={randomizeName(`${x},${y},${z}`)}
+        anchorX="center"
+        anchorY="middle"
+        color="0x9966ff"
+        fontSize="0.6"
+        position={[0, 0, 2]}
+      />
+      <sphereGeometry args={[2, 32, 16]} />
+      <meshStandardMaterial color={hovered ? "hotpink" : "orange"} />
+    </mesh>
+  );
+}
+export const generateNearbyChunks = (x: number, y: number, z: number) => {
   const chunkIds = getIdsNearbyChunks(x, y, z);
   const allSpheres = Array.from(chunkIds).flatMap((chunkId: string) =>
     generateChunk(chunkId)
@@ -23,10 +65,7 @@ export const generateNearbyChunks = (
   return allSpheres;
 };
 
-const generateChunk = (chunkId: string): Mesh[] => {
-  if (generatedChunks.has(chunkId)) {
-    return [];
-  }
+const generateChunk = (chunkId: string) => {
   // eslint-disable-next-line no-console
   console.log(`Generating chunk: ${chunkId}`);
   var poissonSampler = new PoissonDiskSampling(
@@ -40,7 +79,7 @@ const generateChunk = (chunkId: string): Mesh[] => {
   );
   const { xId, yId, zId } = getChunkFromId(chunkId);
   var points = poissonSampler.fill();
-  const spheres: Mesh[] = points.map(([px, py, pz]) => {
+  const spheres = points.map(([px, py, pz]) => {
     const xPos = px + xId * CHUNK_SIZE - OFFSET;
     const yPos = py + yId * CHUNK_SIZE - OFFSET;
     const zPos = pz + zId * CHUNK_SIZE - OFFSET;
@@ -91,13 +130,14 @@ const getChunkFromId = (chunkId: String): Chunk => {
   };
 };
 
-const createSphere = (x: number, y: number, z: number): Mesh => {
-  const sphere = new THREE.Mesh(
-    new THREE.SphereGeometry(2, 32, 16),
-    new THREE.MeshStandardMaterial({
-      color: 0x00ccaa,
-    })
+export const createSphere = (x: number, y: number, z: number): JSX.Element => {
+  return (
+    <Planet
+      key={getChunkId(x, y, z)}
+      radius={2}
+      widthSegments={32}
+      heightSegments={16}
+      position={[x, y, z]}
+    />
   );
-  sphere.position.set(x, y, z);
-  return sphere;
 };
