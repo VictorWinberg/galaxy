@@ -4,9 +4,13 @@ import PoissonDiskSampling from "poisson-disk-sampling";
 import { useRef, useState } from "react";
 import seedrandom from "seedrandom";
 import * as THREE from "three";
-import { CHUNK_SIZE, OFFSET, PLAYER_VIEW_LENGTH } from "./constants";
+import {
+  CHUNK_SIZE,
+  OFFSET,
+  PLAYER_VIEW_LENGTH,
+  MOVE_OFFSET,
+} from "./constants";
 import { randomizeName } from "../nameGenerator/utils";
-import { MOVE_OFFSET } from "./constants";
 extend({ Text });
 
 type Chunk = {
@@ -14,24 +18,23 @@ type Chunk = {
   yId: number;
   zId: number;
 };
-const generatedChunks = new Set<String>();
 
 function Planet(props: any) {
   // This reference gives us direct access to the THREE.Mesh object
   const ref = useRef<THREE.Mesh>();
 
   // Hold state for hovered and clicked events
-  const [hovered, hover] = useState(false);
-  const [clicked, click] = useState(false);
+  const [hovered, setHovered] = useState(false);
+  const [clicked, setClicked] = useState(false);
   const { camera } = useThree();
   // Subscribe this component to the render-loop, rotate the mesh every frame
-  useFrame((state, delta) => (ref.current!.rotation.x += 0.01));
+  useFrame((_state, _delta) => (ref.current!.rotation.x += 0.01));
   const [x, y, z] = props.position;
   const moveCamera = (event: any, clicked: boolean) => {
     const { x, y, z } = event.point;
     camera.position.set(x + MOVE_OFFSET, y + MOVE_OFFSET, z + MOVE_OFFSET);
     camera.lookAt(x, y, z);
-    click(clicked);
+    setClicked(clicked);
   };
   // Return the view, these are regular Threejs elements expressed in JSX
   return (
@@ -40,15 +43,15 @@ function Planet(props: any) {
       ref={ref}
       scale={clicked ? 1.5 : 1}
       onClick={(event) => moveCamera(event, !clicked)}
-      onPointerOver={(event) => hover(true)}
-      onPointerOut={(event) => hover(false)}
+      onPointerOver={() => setHovered(true)}
+      onPointerOut={() => setHovered(false)}
     >
       <text
         /* @ts-ignore */
         text={randomizeName(`${x},${y},${z}`)}
         anchorX="center"
         anchorY="middle"
-        color="0x9966ff"
+        color="#9966ff"
         fontSize="0.6"
         position={[0, 0, 2]}
       />
@@ -57,8 +60,7 @@ function Planet(props: any) {
     </mesh>
   );
 }
-export const generateNearbyChunks = (x: number, y: number, z: number) => {
-  const chunkIds = getIdsNearbyChunks(x, y, z);
+export const generateNearbyChunks = (chunkIds: string[]) => {
   const allSpheres = Array.from(chunkIds).flatMap((chunkId: string) =>
     generateChunk(chunkId)
   );
@@ -85,7 +87,6 @@ const generateChunk = (chunkId: string) => {
     const zPos = pz + zId * CHUNK_SIZE - OFFSET;
     return createSphere(xPos, yPos, zPos);
   });
-  generatedChunks.add(chunkId);
   return spheres;
 };
 
@@ -101,10 +102,17 @@ const getChunk = (x: number, y: number, z: number): Chunk => {
 
 export const getChunkId = (x: number, y: number, z: number): string => {
   const { xId, yId, zId } = getChunk(x, y, z);
-  return `${xId}, ${yId}, ${zId}`;
+  return stringifyCoordinates(xId, yId, zId);
 };
 
-const getIdsNearbyChunks = (x: number, y: number, z: number): Set<string> => {
+const stringifyCoordinates = (x: number, y: number, z: number) =>
+  `${x}, ${y}, ${z}`;
+
+export const getIdsNearbyChunks = (
+  x: number,
+  y: number,
+  z: number
+): string[] => {
   const chunkIds = new Set<string>();
   const deltas = [
     [PLAYER_VIEW_LENGTH, PLAYER_VIEW_LENGTH, PLAYER_VIEW_LENGTH],
@@ -118,10 +126,10 @@ const getIdsNearbyChunks = (x: number, y: number, z: number): Set<string> => {
   deltas.forEach(([dx, dy, dz]) => {
     chunkIds.add(getChunkId(x + dx, y + dy, z + dz));
   });
-  return chunkIds;
+  return Array.from(chunkIds);
 };
 
-const getChunkFromId = (chunkId: String): Chunk => {
+const getChunkFromId = (chunkId: string): Chunk => {
   const coords = chunkId.split(",");
   return {
     xId: parseInt(coords[0]),
@@ -133,7 +141,7 @@ const getChunkFromId = (chunkId: String): Chunk => {
 export const createSphere = (x: number, y: number, z: number): JSX.Element => {
   return (
     <Planet
-      key={getChunkId(x, y, z)}
+      key={stringifyCoordinates(x, y, z)}
       radius={2}
       widthSegments={32}
       heightSegments={16}
