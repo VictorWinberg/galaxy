@@ -28,7 +28,7 @@ function Planet(props: any) {
   const [clicked, setClicked] = useState(false);
   const { camera } = useThree();
   // Subscribe this component to the render-loop, rotate the mesh every frame
-  useFrame((_state, _delta) => (ref.current!.rotation.x += 0.01));
+  useFrame(() => (ref.current!.rotation.x += 0.01));
   const [x, y, z] = props.position;
   const moveCamera = (event: any, clicked: boolean) => {
     const { x, y, z } = event.point;
