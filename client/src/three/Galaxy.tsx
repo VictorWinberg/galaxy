@@ -1,12 +1,11 @@
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import * as THREE from "three";
 import { FlyControls } from "three/examples/jsm/controls/FlyControls";
 import StatsModule from "three/examples/jsm/libs/stats.module";
-import { generateNearbyChunks } from "./ChunkGenerator";
-import { MOVE_OFFSET } from "./constants";
 import { useParamsPosition, Point3D } from "../ParamsPosition";
 import { NavigateFunction, useNavigate } from "react-router-dom";
+import Planets from "./Planets";
 
 function Stats() {
   const stats = useMemo(StatsModule, []);
@@ -57,13 +56,6 @@ const CameraController = ({ navigate }: CameraProps) => {
   useFrame(() => controls.update(clock.getDelta()));
 
   return null;
-};
-
-const Planets = () => {
-  const { camera } = useThree();
-  const pos = camera.position;
-  const planets = generateNearbyChunks(pos.x, pos.y, pos.z);
-  return <>{planets}</>;
 };
 
 function Galaxy() {
