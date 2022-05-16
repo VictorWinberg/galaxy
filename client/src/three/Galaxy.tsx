@@ -5,39 +5,8 @@ import { FlyControls } from "three/examples/jsm/controls/FlyControls";
 import StatsModule from "three/examples/jsm/libs/stats.module";
 import { generateNearbyChunks } from "./ChunkGenerator";
 import { MOVE_OFFSET } from "./constants";
-
-function Planet(props: any) {
-  // This reference gives us direct access to the THREE.Mesh object
-  const ref = useRef<THREE.Mesh>();
-
-  // Hold state for hovered and clicked events
-  const [hovered, hover] = useState(false);
-  const [clicked, click] = useState(false);
-  const { camera } = useThree();
-  // Subscribe this component to the render-loop, rotate the mesh every frame
-  useFrame((state, delta) => (ref.current!.rotation.x += 0.01));
-  const moveCamera = (event: any, clicked: any) => {
-    console.log(event.point, clicked);
-    const { x, y, z } = event.point;
-    camera.position.set(x + MOVE_OFFSET, y + MOVE_OFFSET, z + MOVE_OFFSET);
-    camera.lookAt(x, y, z);
-    click(clicked);
-  };
-  // Return the view, these are regular Threejs elements expressed in JSX
-  return (
-    <mesh
-      {...props}
-      ref={ref}
-      scale={clicked ? 1.5 : 1}
-      onClick={(event) => moveCamera(event, !clicked)}
-      onPointerOver={(event) => hover(true)}
-      onPointerOut={(event) => hover(false)}
-    >
-      <sphereGeometry args={[2, 32, 16]} />
-      <meshStandardMaterial color={hovered ? "hotpink" : "orange"} />
-    </mesh>
-  );
-}
+import { useParamsPosition, Point3D } from "../ParamsPosition";
+import { NavigateFunction, useNavigate } from "react-router-dom";
 
 function Stats() {
   const stats = useMemo(StatsModule, []);
@@ -51,18 +20,37 @@ function Stats() {
   return null;
 }
 
-const CameraController = () => {
+type CameraProps = {
+  navigate: NavigateFunction;
+};
+
+const CameraController = ({ navigate }: CameraProps) => {
   const { camera, gl } = useThree();
   const controls = useMemo(() => new FlyControls(camera, gl.domElement), []);
   const clock = useMemo(() => new THREE.Clock(), []);
+  const [position, setPosition] = useState<Point3D>();
+  const [rotation, setRotation] = useState<Point3D>();
+
+  useParamsPosition({ navigate, position, rotation });
 
   useEffect(() => {
     controls.movementSpeed = 10;
     controls.rollSpeed = Math.PI / 24;
     controls.autoForward = false;
     controls.dragToLook = true;
+
+    const handleChange = () => {
+      const { x: px, y: py, z: pz } = camera.position;
+      setPosition({ x: px, y: py, z: pz });
+      const { x: rx, y: ry, z: rz } = camera.rotation;
+      setRotation({ x: rx, y: ry, z: rz });
+    };
+
+    controls.addEventListener("change", handleChange);
+
     return () => {
       controls.dispose();
+      controls.removeEventListener("change", handleChange);
     };
   }, [camera, gl]);
 
@@ -70,6 +58,7 @@ const CameraController = () => {
 
   return null;
 };
+
 const Planets = () => {
   const { camera } = useThree();
   const pos = camera.position;
@@ -78,6 +67,7 @@ const Planets = () => {
 };
 
 function Galaxy() {
+  const navigate = useNavigate();
   return (
     <Canvas
       camera={{
@@ -87,14 +77,10 @@ function Galaxy() {
         far: 1000,
       }}
     >
-      <CameraController />
+      <CameraController navigate={navigate} />
       <ambientLight color={0x101010} />
       <directionalLight position={[20, 100, 10]} castShadow />
-      <pointLight position={[10, 10, 10]} />
       <Planets />
-      <Planet position={[0, 0, 5]} />
-      <Planet position={[-1.2, 0, 0]} />
-      <Planet position={[1.2, 0, 0]} />
       <Stats />
     </Canvas>
   );

@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { NavigateFunction } from "react-router-dom";
 
-type Point3D = {
+export type Point3D = {
   x: number;
   y: number;
   z: number;
 };
 
 type Props = {
+  navigate: NavigateFunction;
   position: Point3D | undefined;
   rotation: Point3D | undefined;
 };
@@ -15,9 +16,8 @@ type Props = {
 const round = (num: number, digits = 0) =>
   Math.round(num * Math.pow(10, digits)) / Math.pow(10, digits);
 
-const ParamsPosition = ({ position, rotation }: Props) => {
+export const useParamsPosition = ({ navigate, position, rotation }: Props) => {
   const [timeout, setTimeout] = useState(-1);
-  const navigate = useNavigate();
 
   useEffect(() => {
     clearTimeout(timeout);
@@ -34,8 +34,4 @@ const ParamsPosition = ({ position, rotation }: Props) => {
 
     setTimeout(timeoutId);
   }, [position, rotation]);
-
-  return null;
 };
-
-export default ParamsPosition;
