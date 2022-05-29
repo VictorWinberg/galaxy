@@ -6,6 +6,8 @@ import StatsModule from "three/examples/jsm/libs/stats.module";
 import { useParamsPosition, Point3D } from "../ParamsPosition";
 import { NavigateFunction, useNavigate } from "react-router-dom";
 import Planets from "./Planets";
+import ChatOverlay from "../chat/ChatOverlay";
+import { Camera } from "three";
 
 function Stats() {
   const stats = useMemo(StatsModule, []);
@@ -21,11 +23,12 @@ function Stats() {
 
 type CameraProps = {
   navigate: NavigateFunction;
+  controls: FlyControls;
+  gl: THREE.WebGLRenderer;
+  camera: Camera;
 };
 
-const CameraController = ({ navigate }: CameraProps) => {
-  const { camera, gl } = useThree();
-  const controls = useMemo(() => new FlyControls(camera, gl.domElement), []);
+const CameraController = ({ navigate, camera, controls, gl }: CameraProps) => {
   const clock = useMemo(() => new THREE.Clock(), []);
   const [position, setPosition] = useState<Point3D>();
   const [rotation, setRotation] = useState<Point3D>();
@@ -60,21 +63,32 @@ const CameraController = ({ navigate }: CameraProps) => {
 
 function Galaxy() {
   const navigate = useNavigate();
+  const { camera, gl } = useThree();
+  const controls = useMemo(() => new FlyControls(camera, gl.domElement), []);
+
   return (
-    <Canvas
-      camera={{
-        fov: 60,
-        aspect: window.innerWidth / window.innerHeight,
-        near: 1.0,
-        far: 1000,
-      }}
-    >
-      <CameraController navigate={navigate} />
-      <ambientLight color={0x101010} />
-      <directionalLight position={[20, 100, 10]} castShadow />
-      <Planets />
-      <Stats />
-    </Canvas>
+    <>
+      <Canvas
+        camera={{
+          fov: 60,
+          aspect: window.innerWidth / window.innerHeight,
+          near: 1.0,
+          far: 1000,
+        }}
+      >
+        <CameraController
+          navigate={navigate}
+          camera={camera}
+          gl={gl}
+          controls={controls}
+        />
+        <ambientLight color={0x101010} />
+        <directionalLight position={[20, 100, 10]} castShadow />
+        <Planets />
+        <Stats />
+      </Canvas>
+      <ChatOverlay controls={controls} />
+    </>
   );
 }
 

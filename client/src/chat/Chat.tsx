@@ -2,6 +2,7 @@
 import Peer from "peerjs";
 import { useEffect, useState } from "react";
 import styled from "styled-components";
+import { FlyControls } from "three/examples/jsm/controls/FlyControls";
 
 const HOST = "HOST";
 const HostInfoWrapper = styled.div`
@@ -53,11 +54,32 @@ const InputWrapper = styled.div`
   margin-top: 8px;
 `;
 
-const Chat = () => {
+type ChatProps = {
+  controls: FlyControls;
+};
+
+const Chat = ({ controls }: ChatProps) => {
   const [peer, setPeer] = useState<Peer>();
 
   const [msg, setMsg] = useState<string>("");
   const [chat, setChat] = useState<string[]>([]);
+
+  const generateChatName = (uuid: string) => {
+    if (uuid && uuid !== HOST) {
+      return uuid.split("-")[0];
+    }
+
+    return uuid;
+  };
+
+  const getMessageInfo = (msg: string) => {
+    const data = msg.split(" : ");
+    if (data.length === 2) {
+      return { sender: data[0], msg: data[1] };
+    }
+
+    return { sender: "", msg: "" };
+  };
 
   const initializePeer = (_peer: Peer) => {
     _peer.on("open", () => {
@@ -75,9 +97,6 @@ const Chat = () => {
         console.log("conn_inc::open");
       });
       conn.on("data", (data) => {
-        console.log("conn_inc::data", data);
-        setChat((prev) => [...prev, `RECEIVED: ${JSON.stringify(data)}`]);
-
         if (_peer.id === HOST && data.method === "GET_CONNECTIONS") {
           const payload = Object.entries(_peer.connections)
             .filter(([_, value]: any) => value.length > 0)
@@ -123,12 +142,15 @@ const Chat = () => {
       if (otherPeerId === HOST) {
         const obj = { method: "GET_CONNECTIONS" };
         conn.send(obj);
-        setChat((prev) => [...prev, `SENT: ${JSON.stringify(obj)}`]);
       }
     });
     conn.on("data", (data) => {
       console.log("conn_peer::data", data);
-      setChat((prev) => [...prev, `RECEIVED: ${JSON.stringify(data)}`]);
+
+      if (data.method !== "SET_CONNECTIONS") {
+        const { sender, msg } = getMessageInfo(data);
+        setChat((prev) => [...prev, `${sender}: ${msg}`]);
+      }
 
       if (conn.peer === HOST && data.method === "SET_CONNECTIONS") {
         data.payload.forEach((otherPeerId: string) =>
@@ -149,15 +171,30 @@ const Chat = () => {
   const sendMsg = () => {
     if (!peer) throw new Error("Peer undefined");
 
-    setChat((prev) => [...prev, `SEND: ${msg}`]);
+    setChat((prev) => [...prev, `Me: ${msg}`]);
     Object.values(peer.connections).forEach((connections: any) =>
-      connections.forEach((c: Peer.DataConnection) => c.send(msg))
+      connections.forEach((c: Peer.DataConnection) =>
+        c.send(`${generateChatName(peer.id)} : ${msg}`)
+      )
     );
     setMsg("");
   };
 
+  const handleKeyPress = (e: any) => {
+    if (e.keyCode === 13) {
+      handleSubmit(e);
+    }
+  };
+
+  const handleSubmit = (e: any) => {
+    e.preventDefault();
+    sendMsg();
+  };
+
   // initialize peer
   useEffect(() => {
+    controls.movementSpeed = 0;
+    controls.rollSpeed = 0;
     const peer = new Peer({ debug: 2 });
     initializePeer(peer);
     return Object.values(peer.connections).forEach((connections: any) =>
@@ -182,10 +219,18 @@ const Chat = () => {
           <Message key={idx}>{msg}</Message>
         ))}
       </MessageContainer>
-      <InputWrapper>
-        <MessageField value={msg} onChange={(e) => setMsg(e.target.value)} />
-        <SendButton onClick={sendMsg}>Send</SendButton>
-      </InputWrapper>
+      <form>
+        <InputWrapper>
+          <MessageField
+            onKeyPress={handleKeyPress}
+            value={msg}
+            onChange={(e) => setMsg(e.target.value)}
+          />
+          <SendButton onClick={handleSubmit} type="submit">
+            Send
+          </SendButton>
+        </InputWrapper>
+      </form>
     </Wrapper>
   );
 };

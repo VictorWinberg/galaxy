@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import styled, { css } from "styled-components";
+import { FlyControls } from "three/examples/jsm/controls/FlyControls";
 import Chat from "./Chat";
 import ChatIcon from "./ChatIcon";
 import CloseIcon from "./CloseIcon";
@@ -41,7 +42,11 @@ const CloseIconWrapper = styled.div`
   cursor: pointer;
 `;
 
-const ChatOverlay = () => {
+type ChatOverlayProps = {
+  controls: FlyControls;
+};
+
+const ChatOverlay = ({ controls }: ChatOverlayProps) => {
   const [chatVisible, setChatVisible] = useState(false);
 
   return (
@@ -52,7 +57,7 @@ const ChatOverlay = () => {
             <CloseIconWrapper onClick={() => setChatVisible(false)}>
               <CloseIcon />
             </CloseIconWrapper>
-            <Chat />
+            <Chat controls={controls} />
           </>
         ) : (
           <ChatButton onClick={() => setChatVisible(true)}>
