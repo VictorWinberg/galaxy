@@ -15,10 +15,10 @@ There are a env-file in root that you need to create locally:
 ## Truffle Setup
 _Truffle is the service allowing us to run migrate smart contracts on the blockchain_
 
-Install truffle to machine by running the following commad: <br />
+Install truffle to machine by running the following command: <br />
 `npm install -g truffle` or `sudo npm install -g truffle`
 
-Run the following commad to migrate your first smart contract to the blockchain: <br/>
+Run the following command to migrate your first smart contract to the blockchain: <br/>
 `truffle migrate` <br/>
 This will compile your smart contracts and migrate them to the development network <br/>
 See the `truffle-config.js` for more info about the settings.<br>
