@@ -4,7 +4,12 @@ import * as THREE from "three";
 import { FlyControls } from "three/examples/jsm/controls/FlyControls";
 import StatsModule from "three/examples/jsm/libs/stats.module";
 import { useParamsPosition, Point3D } from "../ParamsPosition";
-import { NavigateFunction, useNavigate } from "react-router-dom";
+import {
+  Location,
+  NavigateFunction,
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
 import Planets from "./Planets";
 
 function Stats() {
@@ -21,16 +26,17 @@ function Stats() {
 
 type CameraProps = {
   navigate: NavigateFunction;
+  location: Location;
 };
 
-const CameraController = ({ navigate }: CameraProps) => {
+const CameraController = ({ navigate, location }: CameraProps) => {
   const { camera, gl } = useThree();
   const controls = useMemo(() => new FlyControls(camera, gl.domElement), []);
   const clock = useMemo(() => new THREE.Clock(), []);
   const [position, setPosition] = useState<Point3D>();
   const [rotation, setRotation] = useState<Point3D>();
 
-  useParamsPosition({ navigate, position, rotation });
+  useParamsPosition({ navigate, location, position, rotation });
 
   useEffect(() => {
     controls.movementSpeed = 10;
@@ -60,6 +66,7 @@ const CameraController = ({ navigate }: CameraProps) => {
 
 function Galaxy() {
   const navigate = useNavigate();
+  const location = useLocation();
   return (
     <Canvas
       camera={{
@@ -69,7 +76,7 @@ function Galaxy() {
         far: 1000,
       }}
     >
-      <CameraController navigate={navigate} />
+      <CameraController navigate={navigate} location={location} />
       <ambientLight color={0x101010} />
       <directionalLight position={[20, 100, 10]} castShadow />
       <Planets />

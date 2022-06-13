@@ -1,5 +1,6 @@
+import { useThree } from "@react-three/fiber";
 import { useEffect, useState } from "react";
-import { NavigateFunction } from "react-router-dom";
+import { Location, NavigateFunction } from "react-router-dom";
 
 export type Point3D = {
   x: number;
@@ -9,6 +10,7 @@ export type Point3D = {
 
 type Props = {
   navigate: NavigateFunction;
+  location: Location;
   position: Point3D | undefined;
   rotation: Point3D | undefined;
 };
@@ -16,8 +18,22 @@ type Props = {
 const round = (num: number, digits = 0) =>
   Math.round(num * Math.pow(10, digits)) / Math.pow(10, digits);
 
-export const useParamsPosition = ({ navigate, position, rotation }: Props) => {
+export const useParamsPosition = ({
+  navigate,
+  location,
+  position,
+  rotation,
+}: Props) => {
   const [timeout, setTimeout] = useState(-1);
+  const { camera } = useThree();
+
+  useEffect(() => {
+    const xyz = location.pathname.split(/[@,+]/).map(Number);
+    if (xyz.length === 7) {
+      camera.position.set(xyz[1], xyz[2], xyz[3]);
+      camera.rotation.set(xyz[4], xyz[5], xyz[6]);
+    }
+  }, []);
 
   useEffect(() => {
     clearTimeout(timeout);
