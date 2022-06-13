@@ -28,10 +28,15 @@ export const useParamsPosition = ({
   const { camera } = useThree();
 
   useEffect(() => {
-    const xyz = location.pathname.split(/[@,+]/).map(Number);
-    if (xyz.length === 7) {
-      camera.position.set(xyz[1], xyz[2], xyz[3]);
-      camera.rotation.set(xyz[4], xyz[5], xyz[6]);
+    const digit = "(-?\\d*\\.?\\d+)";
+    const exp = `${digit},${digit},${digit}`;
+    const regex = new RegExp(`@${exp}\\+${exp}`);
+
+    const matched = location.pathname.match(regex)?.map(Number);
+    if (matched) {
+      const [, x, y, z, rx, ry, rz] = matched;
+      camera.position.set(x, y, z);
+      camera.rotation.set(rx, ry, rz);
     }
   }, []);
 
